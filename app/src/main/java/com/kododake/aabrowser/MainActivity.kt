@@ -175,7 +175,7 @@ class MainActivity : AppCompatActivity() {
                                 }
                                 return false;
                             }
-                            if (clickControl(/next|next track|skip|次|次へ|スキップ/)) return;
+                            if (clickControl(/next|next track|skip/)) return;
                             var medias = document.querySelectorAll('video, audio');
                             for (var i = 0; i < medias.length; i++) medias[i].currentTime += 10;
                         })();
@@ -199,7 +199,7 @@ class MainActivity : AppCompatActivity() {
                                 }
                                 return false;
                             }
-                            if (clickControl(/previous|prev|back|前|前へ|戻る/)) return;
+                            if (clickControl(/previous|prev|back/)) return;
                             var medias = document.querySelectorAll('video, audio');
                             for (var i = 0; i < medias.length; i++) medias[i].currentTime -= 10;
                         })();
