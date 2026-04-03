@@ -221,14 +221,25 @@ fun configureWebView(
                 if (view != null && callback != null) {
                     callbacks.onEnterFullscreen(view, callback)
                     
-                    // --- NEW ADDITION: Crop and stretch video to remove black bars ---
+                    // --- REVISED: Target only fullscreen video & save original styles ---
                     val js = """
-                        var videos = document.getElementsByTagName('video');
-                        for(var i=0; i<videos.length; i++) {
-                           videos[i].style.objectFit = 'cover';
-                           videos[i].style.width = '100vw';
-                           videos[i].style.height = '100vh';
-                        }
+                        (function() {
+                            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+                            if (!fsEl) return;
+                            
+                            var videos = fsEl.tagName.toLowerCase() === 'video' ? [fsEl] : fsEl.querySelectorAll('video');
+                            for(var i=0; i<videos.length; i++) {
+                                var v = videos[i];
+                                if (!v.hasAttribute('data-orig-fit')) {
+                                    v.setAttribute('data-orig-fit', v.style.objectFit || '');
+                                    v.setAttribute('data-orig-w', v.style.width || '');
+                                    v.setAttribute('data-orig-h', v.style.height || '');
+                                }
+                                v.style.objectFit = 'cover';
+                                v.style.width = '100vw';
+                                v.style.height = '100vh';
+                            }
+                        })();
                     """.trimIndent()
                     this@with.evaluateJavascript(js, null)
                     // -----------------------------------------------------------------
@@ -241,14 +252,22 @@ fun configureWebView(
             override fun onHideCustomView() {
                 callbacks.onExitFullscreen()
                 
-                // --- NEW ADDITION: Restore normal video size when exiting fullscreen ---
+                // --- REVISED: Restore exact previous styles using saved attributes ---
                 val js = """
-                    var videos = document.getElementsByTagName('video');
-                    for(var i=0; i<videos.length; i++) {
-                       videos[i].style.objectFit = '';
-                       videos[i].style.width = '';
-                       videos[i].style.height = '';
-                    }
+                    (function() {
+                        var videos = document.getElementsByTagName('video');
+                        for(var i=0; i<videos.length; i++) {
+                            var v = videos[i];
+                            if (v.hasAttribute('data-orig-fit')) {
+                                v.style.objectFit = v.getAttribute('data-orig-fit');
+                                v.style.width = v.getAttribute('data-orig-w');
+                                v.style.height = v.getAttribute('data-orig-h');
+                                v.removeAttribute('data-orig-fit');
+                                v.removeAttribute('data-orig-w');
+                                v.removeAttribute('data-orig-h');
+                            }
+                        }
+                    })();
                 """.trimIndent()
                 this@with.evaluateJavascript(js, null)
                 // -----------------------------------------------------------------------
