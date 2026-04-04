@@ -87,8 +87,6 @@ fun configureWebView(
 
         applyPageDarkening(allowDarkPages)
         applyUserAgent(userAgentProfile, useDesktopMode)
-        val scale = context.resources.displayMetrics.density * 100
-        setInitialScale(scale.toInt())
 
         CookieManager.getInstance().also {
             it.setAcceptCookie(true)
@@ -117,6 +115,11 @@ fun configureWebView(
                 super.onPageStarted(view, url, favicon)
                 val stringUrl = url ?: return
                 callbacks.onPageStarted(stringUrl)
+
+                if (stringUrl.contains("youtube.com")) {
+                    view.evaluateJavascript(YOUTUBE_PREEMPTIVE_JS, null)
+                }
+
                 val uri = Uri.parse(stringUrl)
                 val scheme = uri.scheme?.lowercase()
 
@@ -134,6 +137,9 @@ fun configureWebView(
                 super.onPageFinished(view, url)
                 view.evaluateJavascript(SpeechRecognitionBridge.POLYFILL_JS, null)
                 view.evaluateJavascript(RESTORE_UI_JS, null)
+                if (url?.contains("youtube.com") == true) {
+                    view.evaluateJavascript(YOUTUBE_LAYOUT_FIX_JS, null)
+                }
                 url?.let(callbacks.onUrlChange)
             }
 
@@ -391,6 +397,13 @@ private fun WebView.applyUserAgent(profile: UserAgentProfile, desktop: Boolean) 
     settings.userAgentString = buildUserAgent(profile, desktop)
     settings.useWideViewPort = desktop
     settings.loadWithOverviewMode = desktop
+    
+    val scale = if (desktop) {
+        1 // Overview Mode handles scaling
+    } else {
+        (context.resources.displayMetrics.density * com.kododake.aabrowser.data.BrowserPreferences.getGlobalScalePercent(context)).toInt()
+    }
+    setInitialScale(scale)
 }
 
 private fun WebView.applyPageDarkening(enabled: Boolean) {
@@ -431,14 +444,10 @@ private const val RESTORE_UI_JS = """
         if (document.documentElement.hasAttribute('data-orig-overflow')) {
             document.documentElement.style.overflow = document.documentElement.getAttribute('data-orig-overflow');
             document.documentElement.removeAttribute('data-orig-overflow');
-        } else {
-            document.documentElement.style.overflow = "auto";
         }
         if (document.body.hasAttribute('data-orig-overflow')) {
             document.body.style.overflow = document.body.getAttribute('data-orig-overflow');
             document.body.removeAttribute('data-orig-overflow');
-        } else {
-            document.body.style.overflow = "auto";
         }
 
         var videos = document.getElementsByTagName('video');
@@ -452,6 +461,11 @@ private const val RESTORE_UI_JS = """
                 v.style.width = v.getAttribute('data-orig-w');
                 v.style.height = v.getAttribute('data-orig-h');
                 v.style.zIndex = v.getAttribute('data-orig-z');
+                v.style.objectPosition = v.getAttribute('data-orig-object-position');
+                v.style.transform = v.getAttribute('data-orig-transform');
+                v.style.transition = v.getAttribute('data-orig-transition');
+                v.style.transformOrigin = v.getAttribute('data-orig-transform-origin');
+
                 v.removeAttribute('data-orig-fit');
                 v.removeAttribute('data-orig-pos');
                 v.removeAttribute('data-orig-top');
@@ -459,6 +473,10 @@ private const val RESTORE_UI_JS = """
                 v.removeAttribute('data-orig-w');
                 v.removeAttribute('data-orig-h');
                 v.removeAttribute('data-orig-z');
+                v.removeAttribute('data-orig-object-position');
+                v.removeAttribute('data-orig-transform');
+                v.removeAttribute('data-orig-transition');
+                v.removeAttribute('data-orig-transform-origin');
             } else {
                 v.style.removeProperty('position');
                 v.style.removeProperty('top');
@@ -470,8 +488,52 @@ private const val RESTORE_UI_JS = """
                 v.style.removeProperty('object-position');
                 v.style.removeProperty('transform');
                 v.style.removeProperty('transition');
+                v.style.removeProperty('transform-origin');
             }
         }
         window.dispatchEvent(new Event('resize'));
     };
+"""
+
+private const val YOUTUBE_PREEMPTIVE_JS = """
+    (function() {
+        var css = 'ytd-watch-flexy[flexy] #primary.ytd-watch-flexy { margin-left: 0 !important; margin-right: auto !important; } ytd-watch-flexy[flexy] #secondary.ytd-watch-flexy { display: block !important; }';
+        var style = document.createElement('style');
+        style.type = 'text/css';
+        style.innerHTML = css;
+        (document.head || document.documentElement).appendChild(style);
+    })();
+"""
+
+private const val YOUTUBE_LAYOUT_FIX_JS = """
+    (function() {
+        function applyFix() {
+            var watchPage = document.querySelector('ytd-watch-flexy');
+            if (watchPage) {
+                watchPage.setAttribute('is-two-columns-layout', '');
+                watchPage.removeAttribute('theater');
+                watchPage.removeAttribute('fullscreen');
+                watchPage.removeAttribute('is-extra-wide-video');
+                
+                var playerData = watchPage.querySelector('#player-container-outer');
+                if (playerData) {
+                    playerData.style.marginLeft = '0';
+                    playerData.style.marginRight = '0';
+                }
+            }
+            var cinematic = document.querySelector('#cinematic-container');
+            if (cinematic) cinematic.style.display = 'none';
+            window.dispatchEvent(new Event('resize'));
+        }
+        applyFix();
+        // Handle YouTube's SPA navigation
+        document.addEventListener('yt-navigate-finish', applyFix);
+        // Fallback for dynamic layout shifts
+        var observer = new MutationObserver(function(mutations) {
+            if (document.querySelector('ytd-watch-flexy') && !document.querySelector('ytd-watch-flexy').hasAttribute('is-two-columns-layout')) {
+                applyFix();
+            }
+        });
+        observer.observe(document.documentElement, { attributes: true, childList: true, subtree: true });
+    })();
 """

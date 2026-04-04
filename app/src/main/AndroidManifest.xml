@@ -50,10 +50,7 @@
                 <category android:name="androidx.car.app.category.NAVIGATION" />
                 <category android:name="android.intent.category.APP_MAPS" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
+
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -102,6 +99,15 @@
             android:name="com.google.android.gms.oss.licenses.OssLicensesMenuActivity"
             android:exported="false"
             android:theme="@style/Theme.AABrowser" />
+
+        <service
+            android:name=".BrowserCarAppService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="androidx.car.app.CarAppService" />
+                <category android:name="androidx.car.app.category.NAVIGATION" />
+            </intent-filter>
+        </service>
 
     </application>
 

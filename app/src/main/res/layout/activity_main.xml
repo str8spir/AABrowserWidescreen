@@ -128,7 +128,8 @@
         android:id="@+id/menuOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone">
+        android:visibility="gone"
+        android:elevation="100dp">
 
         <View
             android:id="@+id/menuOverlayScrim"
@@ -1187,17 +1188,77 @@
         </com.google.android.material.card.MaterialCardView>
     </FrameLayout>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/menuFab"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/navigationDock"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|start"
         android:layout_margin="16dp"
-        android:contentDescription="@string/menu_open_description"
-        app:srcCompat="@android:drawable/ic_menu_more"
-        app:tint="?attr/colorOnPrimary"
-        app:backgroundTint="?attr/colorPrimary"
-        app:elevation="6dp" />
+        app:cardCornerRadius="28dp"
+        app:cardElevation="6dp"
+        app:cardBackgroundColor="?attr/colorPrimary"
+        app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:gravity="center_vertical">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDockMenu"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/menu_open_description"
+                app:icon="@android:drawable/ic_menu_more"
+                app:iconSize="24dp"
+                app:iconTint="?attr/colorOnPrimary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDockFullscreen"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/menu_zoom_fill"
+                app:icon="@drawable/devices_other_24px"
+                app:iconSize="22dp"
+                app:iconTint="?attr/colorOnPrimary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDockReset"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/menu_zoom_reset"
+                app:icon="@drawable/refresh_24px"
+                app:iconSize="22dp"
+                app:iconTint="?attr/colorOnPrimary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDockZoomIn"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="Zoom In"
+                app:icon="@android:drawable/ic_menu_add"
+                app:iconSize="22dp"
+                app:iconTint="?attr/colorOnPrimary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDockZoomOut"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="Zoom Out"
+                app:icon="@drawable/ic_close"
+                app:iconSize="22dp"
+                app:iconTint="?attr/colorOnPrimary" />
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
     <FrameLayout
         android:id="@+id/startPageRoot"
@@ -1355,7 +1416,7 @@
         android:layout_height="24dp"
         android:src="@drawable/ic_cursor"
         android:visibility="gone"
-        android:elevation="100dp"
+        android:elevation="101dp"
         android:importantForAccessibility="no" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

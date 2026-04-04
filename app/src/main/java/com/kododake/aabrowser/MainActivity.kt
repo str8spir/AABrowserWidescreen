@@ -84,13 +84,18 @@ class MainActivity : AppCompatActivity() {
     private val autoHideMenuFab = Runnable {
         if (!::binding.isInitialized) return@Runnable
         if (BrowserPreferences.isQuickActionButtonAlwaysVisible(this)) return@Runnable
-        binding.menuFab.hide()
+        binding.navigationDock.animate().alpha(0f).setDuration(200).withEndAction {
+            binding.navigationDock.visibility = View.GONE
+        }.start()
     }
     private val showMenuFabRunnable = Runnable {
         if (!::binding.isInitialized) return@Runnable
         if (isInFullscreen() || binding.menuOverlay.isVisible) return@Runnable
-        binding.menuFab.show()
+        binding.navigationDock.visibility = View.VISIBLE
+        binding.navigationDock.alpha = 0f
+        binding.navigationDock.animate().alpha(1f).setDuration(200).start()
         if (!BrowserPreferences.isQuickActionButtonAlwaysVisible(this)) {
+            handler.removeCallbacks(autoHideMenuFab)
             handler.postDelayed(autoHideMenuFab, MENU_BUTTON_AUTO_HIDE_DELAY_MS)
         }
     }
@@ -697,7 +702,7 @@ class MainActivity : AppCompatActivity() {
                 // Do nothing
             },
             onPageStarted = { _ ->
-                runOnUiThread { resetVideoZoom() }
+                runOnUiThread { resetVideoZoom(tab) }
             },
             onPermissionRequest = { request ->
                 runOnUiThread { handleWebPermissionRequest(request) }
@@ -951,7 +956,8 @@ class MainActivity : AppCompatActivity() {
         val resumeLastPageOnLaunch = BrowserPreferences.shouldResumeLastPageOnLaunch(this)
         currentUserAgentProfile = BrowserPreferences.getUserAgentProfile(this)
 
-        binding.menuFab.hide()
+        binding.navigationDock.visibility = View.GONE
+        binding.navigationDock.alpha = 0f
         initializeTabs(
             intentUrl = intentUrl,
             homePageUrl = homePageUrl,
@@ -1022,82 +1028,17 @@ class MainActivity : AppCompatActivity() {
             createNewTab(activate = true)
             hideMenuOverlay()
         }
+        binding.btnDockMenu.setOnClickListener { handleQuickActionButtonPressed() }
+        binding.btnDockFullscreen.setOnClickListener { applyVideoCropToFill() }
+        binding.btnDockReset.setOnClickListener {
+            resetVideoZoom()
+            webView?.reload()
+        }
+        binding.btnDockZoomIn.setOnClickListener { zoomVideo(0.05) }
+        binding.btnDockZoomOut.setOnClickListener { zoomVideo(-0.05) }
+
         binding.btnZoomFill.setOnClickListener {
-            android.util.Log.d("BMW_UI", "Zoom Fill Clicked")
-            
-            // Android UI: Set immersive mode
-            @Suppress("DEPRECATION")
-            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN)
-
-            val js = """
-                (function() {
-                    var selectors = [
-                        'video', '.html5-main-video', '.video-stream', 
-                        '[class*="player"] video', '[class*="video"] video', 
-                        '.video-player__container video', '.vp-video video', 
-                        '.dmp_VideoView-video', '.jw-video', '#dv-web-player video'
-                    ];
-                    var video = null;
-                    for (var i = 0; i < selectors.length; i++) {
-                        video = document.querySelector(selectors[i]);
-                        if (video) break;
-                    }
-                    if (video) {
-                        // 1. Save original styles if not already saved
-                        if (!video.hasAttribute('data-orig-fit')) {
-                            video.setAttribute('data-orig-fit', video.style.objectFit || '');
-                            video.setAttribute('data-orig-pos', video.style.position || '');
-                            video.setAttribute('data-orig-top', video.style.top || '');
-                            video.setAttribute('data-orig-left', video.style.left || '');
-                            video.setAttribute('data-orig-w', video.style.width || '');
-                            video.setAttribute('data-orig-h', video.style.height || '');
-                            video.setAttribute('data-orig-z', video.style.zIndex || '');
-                        }
-
-                        // 2. Force the video to anchor to the ABSOLUTE screen edges
-                        video.style.setProperty('position', 'fixed', 'important');
-                        video.style.setProperty('top', '0', 'important');
-                        video.style.setProperty('left', '0', 'important');
-                        video.style.setProperty('width', '100vw', 'important');
-                        video.style.setProperty('height', '100vh', 'important');
-                        video.style.setProperty('z-index', '2147483647', 'important');
-                        
-                        // 3. Perform the Crop-to-Fill
-                        video.style.setProperty('object-fit', 'cover', 'important');
-                        video.style.setProperty('object-position', 'center center', 'important');
-                        video.style.setProperty('transform', 'none', 'important');
-
-                        // 4. Hide ALL internal Video UI (controls, progress bar, title)
-                        var selectorsToHide = [
-                            '.ytp-chrome-bottom', '.ytp-chrome-top', '.ytp-gradient-bottom', 
-                            '.ytp-gradient-top', '.ytp-show-cards-title', 'ytm-header-bar',
-                            '.ytp-ce-element', '.ytp-pause-overlay', '.video-player__overlay',
-                            '.vp-controls', '.vp-title', '.vp-nudge-wrapper',
-                            '.jw-controls', '.jw-title', '.jw-overlays', '.dmp_Controls',
-                            '.video-controls', '.player-controls', '.controls-container'
-                        ];
-                        selectorsToHide.forEach(s => {
-                            document.querySelectorAll(s).forEach(el => el.style.setProperty('display', 'none', 'important'));
-                        });
-
-                        // 5. Lock the body so we don't accidentally scroll away from the video
-                        if (!document.documentElement.hasAttribute('data-orig-overflow')) {
-                            document.documentElement.setAttribute('data-orig-overflow', document.documentElement.style.overflow || '');
-                        }
-                        if (!document.body.hasAttribute('data-orig-overflow')) {
-                            document.body.setAttribute('data-orig-overflow', document.body.style.overflow || '');
-                        }
-                        document.documentElement.style.setProperty('overflow', 'hidden', 'important');
-                        document.body.style.setProperty('overflow', 'hidden', 'important');
-                    }
-                })();
-            """.trimIndent()
-            webView?.evaluateJavascript(js, null)
+            applyVideoCropToFill()
             hideMenuOverlay()
         }
         binding.btnResetZoom.setOnClickListener {
@@ -1151,8 +1092,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        binding.persistentButtonMenu.setOnClickListener { showMenuOverlay() }
-        binding.menuFab.setOnClickListener { handleQuickActionButtonPressed() }
         binding.buttonClose.setOnClickListener { hideMenuOverlay() }
         binding.menuOverlayScrim.setOnClickListener { hideMenuOverlay() }
 
@@ -1286,14 +1225,14 @@ class MainActivity : AppCompatActivity() {
         if (!::binding.isInitialized) return
 
         val mode = BrowserPreferences.getQuickActionButtonMode(this)
-        binding.menuFab.setImageResource(
+        binding.btnDockMenu.setIconResource(
             if (mode == QuickActionButtonMode.ADDRESS_BAR) {
                 R.drawable.search_24px
             } else {
                 android.R.drawable.ic_menu_more
             }
         )
-        binding.menuFab.contentDescription = getString(
+        binding.btnDockMenu.contentDescription = getString(
             if (mode == QuickActionButtonMode.ADDRESS_BAR) {
                 R.string.menu_open_address_bar
             } else {
@@ -1304,7 +1243,7 @@ class MainActivity : AppCompatActivity() {
         val density = resources.displayMetrics.density
         val margin = (16 * density).toInt()
         val position = BrowserPreferences.getQuickActionButtonPosition(this)
-        val layoutParams = binding.menuFab.layoutParams as CoordinatorLayout.LayoutParams
+        val layoutParams = binding.navigationDock.layoutParams as CoordinatorLayout.LayoutParams
         layoutParams.gravity = when (position) {
             QuickActionButtonPosition.BOTTOM_LEFT -> android.view.Gravity.BOTTOM or android.view.Gravity.START
             QuickActionButtonPosition.BOTTOM_RIGHT -> android.view.Gravity.BOTTOM or android.view.Gravity.END
@@ -1318,15 +1257,95 @@ class MainActivity : AppCompatActivity() {
             margin
         }
         layoutParams.setMargins(margin, topOffset, margin, margin)
-        binding.menuFab.layoutParams = layoutParams
+        binding.navigationDock.layoutParams = layoutParams
 
         if (BrowserPreferences.isQuickActionButtonAlwaysVisible(this)) {
             handler.removeCallbacks(showMenuFabRunnable)
             handler.removeCallbacks(autoHideMenuFab)
             if (!isInFullscreen() && !binding.menuOverlay.isVisible) {
-                binding.menuFab.show()
+                binding.navigationDock.visibility = View.VISIBLE
+                binding.navigationDock.alpha = 1f
             }
         }
+    }
+
+    private fun applyVideoCropToFill() {
+        android.util.Log.d("BMW_UI", "Applying Crop-to-Fill")
+        
+        // Android UI: Set immersive mode using modern API
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            hide(WindowInsetsCompat.Type.systemBars())
+            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+
+        val js = """
+            (function() {
+                var selectors = [
+                    'video', '.html5-main-video', '.video-stream', 
+                    '[class*="player"] video', '[class*="video"] video', 
+                    '.video-player__container video', '.vp-video video', 
+                    '.dmp_VideoView-video', '.jw-video', '#dv-web-player video'
+                ];
+                var video = null;
+                for (var i = 0; i < selectors.length; i++) {
+                    video = document.querySelector(selectors[i]);
+                    if (video) break;
+                }
+                if (video) {
+                    // 1. Save original styles if not already saved
+                    if (!video.hasAttribute('data-orig-fit')) {
+                        video.setAttribute('data-orig-fit', video.style.objectFit || '');
+                        video.setAttribute('data-orig-pos', video.style.position || '');
+                        video.setAttribute('data-orig-top', video.style.top || '');
+                        video.setAttribute('data-orig-left', video.style.left || '');
+                        video.setAttribute('data-orig-w', video.style.width || '');
+                        video.setAttribute('data-orig-h', video.style.height || '');
+                        video.setAttribute('data-orig-z', video.style.zIndex || '');
+                        video.setAttribute('data-orig-object-position', video.style.objectPosition || '');
+                        video.setAttribute('data-orig-transform', video.style.transform || '');
+                        video.setAttribute('data-orig-transition', video.style.transition || '');
+                        video.setAttribute('data-orig-transform-origin', video.style.transformOrigin || '');
+                    }
+
+                    // 2. Force the video to anchor to the ABSOLUTE screen edges
+                    video.style.setProperty('position', 'fixed', 'important');
+                    video.style.setProperty('top', '0', 'important');
+                    video.style.setProperty('left', '0', 'important');
+                    video.style.setProperty('width', '100vw', 'important');
+                    video.style.setProperty('height', '100vh', 'important');
+                    video.style.setProperty('z-index', '2147483647', 'important');
+                    
+                    // 3. Perform the Crop-to-Fill
+                    video.style.setProperty('object-fit', 'cover', 'important');
+                    video.style.setProperty('object-position', 'center center', 'important');
+                    video.style.setProperty('transform', 'none', 'important');
+
+                    // 4. Hide ALL internal Video UI (controls, progress bar, title)
+                    var selectorsToHide = [
+                        '.ytp-chrome-bottom', '.ytp-chrome-top', '.ytp-gradient-bottom', 
+                        '.ytp-gradient-top', '.ytp-show-cards-title', 'ytm-header-bar',
+                        '.ytp-ce-element', '.ytp-pause-overlay', '.video-player__overlay',
+                        '.vp-controls', '.vp-title', '.vp-nudge-wrapper',
+                        '.jw-controls', '.jw-title', '.jw-overlays', '.dmp_Controls',
+                        '.video-controls', '.player-controls', '.controls-container'
+                    ];
+                    selectorsToHide.forEach(s => {
+                        document.querySelectorAll(s).forEach(el => el.style.setProperty('display', 'none', 'important'));
+                    });
+
+                    // 5. Lock the body so we don't accidentally scroll away from the video
+                    if (!document.documentElement.hasAttribute('data-orig-overflow')) {
+                        document.documentElement.setAttribute('data-orig-overflow', document.documentElement.style.overflow || '');
+                    }
+                    if (!document.body.hasAttribute('data-orig-overflow')) {
+                        document.body.setAttribute('data-orig-overflow', document.body.style.overflow || '');
+                    }
+                    document.documentElement.style.setProperty('overflow', 'hidden', 'important');
+                    document.body.style.setProperty('overflow', 'hidden', 'important');
+                }
+            })();
+        """.trimIndent()
+        webView?.evaluateJavascript(js, null)
     }
 
     private fun focusMenuAddressBar() {
@@ -1532,7 +1551,8 @@ class MainActivity : AppCompatActivity() {
         }
         handler.removeCallbacks(showMenuFabRunnable)
         handler.removeCallbacks(autoHideMenuFab)
-        binding.menuFab.hide()
+        binding.navigationDock.visibility = View.GONE
+        binding.navigationDock.alpha = 0f
         refreshBookmarks()
         refreshTabs()
         refreshStartPage()
@@ -1562,7 +1582,8 @@ class MainActivity : AppCompatActivity() {
         handler.removeCallbacks(autoHideMenuFab)
         if (isInFullscreen() || binding.menuOverlay.isVisible) return
         if (BrowserPreferences.isQuickActionButtonAlwaysVisible(this)) {
-            binding.menuFab.show()
+            binding.navigationDock.visibility = View.VISIBLE
+            binding.navigationDock.alpha = 1f
             return
         }
         handler.postDelayed(showMenuFabRunnable, MENU_BUTTON_SHOW_DELAY_MS)
@@ -1599,7 +1620,8 @@ class MainActivity : AppCompatActivity() {
         customView = view
         customViewCallback = callback
         if (binding.menuOverlay.isVisible) hideMenuOverlay()
-        binding.menuFab.hide()
+        binding.navigationDock.visibility = View.GONE
+        binding.navigationDock.alpha = 0f
         binding.persistentAddressBarCard.visibility = View.GONE
         webView?.visibility = View.INVISIBLE
         binding.fullscreenContainer.apply {
@@ -2377,8 +2399,12 @@ class MainActivity : AppCompatActivity() {
     private fun updateCursorPosition(dx: Float, dy: Float) {
         showVirtualCursor()
         val sensitivity = 1.5f
-        cursorX = (cursorX + dx * sensitivity).coerceIn(0f, binding.root.width.toFloat())
-        cursorY = (cursorY + dy * sensitivity).coerceIn(0f, binding.root.height.toFloat())
+        
+        val cursorWidth = if (binding.virtualCursor.width > 0) binding.virtualCursor.width.toFloat() else TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, resources.displayMetrics)
+        val cursorHeight = if (binding.virtualCursor.height > 0) binding.virtualCursor.height.toFloat() else TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, resources.displayMetrics)
+
+        cursorX = (cursorX + dx * sensitivity).coerceIn(0f, (binding.root.width - cursorWidth).coerceAtLeast(0f))
+        cursorY = (cursorY + dy * sensitivity).coerceIn(0f, (binding.root.height - cursorHeight).coerceAtLeast(0f))
 
         binding.virtualCursor.x = cursorX
         binding.virtualCursor.y = cursorY
@@ -2419,14 +2445,14 @@ class MainActivity : AppCompatActivity() {
         showMenuButtonTemporarily()
     }
 
-    private fun resetVideoZoom() {
-        videoZoomScale = 1.0
-        
-        // Restore Android UI
-        @Suppress("DEPRECATION")
-        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+    private fun resetVideoZoom(tab: BrowserTab? = activeTab) {
+        if (tab == activeTab) {
+            videoZoomScale = 1.0
+            // Restore Android UI
+            WindowInsetsControllerCompat(window, window.decorView).show(WindowInsetsCompat.Type.systemBars())
+        }
 
-        webView?.evaluateJavascript("if(typeof restoreUI === 'function') { restoreUI(); }", null)
+        tab?.webView?.evaluateJavascript("if(typeof restoreUI === 'function') { restoreUI(); }", null)
     }
 
     private fun zoomVideo(delta: Double) {
@@ -2450,6 +2476,19 @@ class MainActivity : AppCompatActivity() {
                     if (video) break;
                 }
                 if (video) {
+                    if (!video.hasAttribute('data-orig-fit')) {
+                        video.setAttribute('data-orig-fit', video.style.objectFit || '');
+                        video.setAttribute('data-orig-pos', video.style.position || '');
+                        video.setAttribute('data-orig-top', video.style.top || '');
+                        video.setAttribute('data-orig-left', video.style.left || '');
+                        video.setAttribute('data-orig-w', video.style.width || '');
+                        video.setAttribute('data-orig-h', video.style.height || '');
+                        video.setAttribute('data-orig-z', video.style.zIndex || '');
+                        video.setAttribute('data-orig-object-position', video.style.objectPosition || '');
+                        video.setAttribute('data-orig-transform', video.style.transform || '');
+                        video.setAttribute('data-orig-transition', video.style.transition || '');
+                        video.setAttribute('data-orig-transform-origin', video.style.transformOrigin || '');
+                    }
                     video.style.transform = 'scale($videoZoomScale)';
                     video.style.transition = 'transform 0.1s ease-out';
                     video.style.transformOrigin = 'center center';
