@@ -29,8 +29,6 @@ This repository is a specialized fork focused on navigation ergonomics and wides
     - **R (Reset):** Instant page reload and scale reset "Panic Button."
     - **(+) Zoom In:** Incremental page magnification.
     - **(-) Zoom Out:** Incremental page reduction.
-- 🏎️ **BMW iDrive Optimization:** - **Rotary Zoom:** Use the iDrive rotary controller to zoom video elements (1.0x to 2.0x).
-    - **Touchpad Mouse:** Use the iDrive controller's touchpad to move a virtual cursor and click.
 - 📺 **Widevideo Crop-to-Fill:** Uses `object-fit: cover` logic to scale video content to fill ultra-wide displays.
 - 🔒 **Document Overflow Lock:** Prevents erratic page scrolling while in Zoom/Crop mode to keep content centered.
 
