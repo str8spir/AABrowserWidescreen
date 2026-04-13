@@ -17,6 +17,10 @@ Transform your "parked time" with a sleek, modern browser designed specifically 
 
 ---
 
+<div align="center">
+  <img width="90%" src="docs/img/aabrowser1.png" alt="AA Browser showcase screenshot" />
+</div>
+
 ## ✨ Features
 
 - 🎯 **Native Automotive UI:** Designed specifically for car displays, not just a stretched phone app.
@@ -35,10 +39,6 @@ Transform your "parked time" with a sleek, modern browser designed specifically 
 - 🔄 **Smart Desktop Mode:** Seamlessly toggle between mobile and desktop rendering.
 - 📚 **Dashboard Bookmarks:** Quick access to your favorite sites without touching your phone.
 
-
-<div align="center">
-  <img width="90%" src="docs/img/aabrowser1.png" alt="AA Browser showcase screenshot" />
-</div>
 
 ### 📸 Screenshots
 
