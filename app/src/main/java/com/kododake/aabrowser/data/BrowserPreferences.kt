@@ -44,12 +44,12 @@ object BrowserPreferences {
     private const val SEARCH_TEMPLATE = "https://www.google.com/search?q=%s"
 
     private val DEFAULT_BOOKMARKS = listOf(
-        "https://m.youtube.com",
         "https://www.google.com",
+        "https://youtube.com",
         "https://www.twitch.tv",
         "https://kick.com",
-        "https://www.wikipedia.org",
-        "https://weather.com"
+        "https://weather.com",
+        "https://keepandroidopen.org"
     )
 
     const val MAX_START_PAGE_SITES = 6

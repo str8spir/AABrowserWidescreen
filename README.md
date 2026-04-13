@@ -35,24 +35,16 @@ Transform your "parked time" with a sleek, modern browser designed specifically 
 - 🔄 **Smart Desktop Mode:** Seamlessly toggle between mobile and desktop rendering.
 - 📚 **Dashboard Bookmarks:** Quick access to your favorite sites without touching your phone.
 
-## 🆕 Recent Enhancements
 
-- Added a native start page with six configurable quick-link slots.
-- Added default quick links for YouTube Mobile, Google, Twitch, Kick, Wikipedia, and Weather.com.
-- Added a user-defined home page that disables the start page until cleared.
-- Added support for multiple browser tabs with an in-app tab manager.
-- Added an option to restore the full tab session on launch when no home page is set.
-- Added light theme and AMOLED dark theme support.
-- Added a beta toggle to darken supported web pages in WebView.
-- Added global display scaling presets plus custom scale input.
-- Added bookmark-menu actions to pin the current site to the start page or set it as the home page.
-- Added a startup preference to reopen the last visited page when no home page is set.
-- Added an optional always-visible URL bar overlay for quicker navigation.
-- Added configurable floating-button behavior, visibility, and corner placement.
-- Added local caching for first-party site icons used on start-page cards.
+<div align="center">
+  <img width="90%" src="docs/img/aabrowser1.png" alt="AA Browser showcase screenshot" />
+</div>
 
-<div align="left">
-  <img width="38%" src="docs/screenshots/start-page.png" alt="Start page with six quick links" />
+### 📸 Screenshots
+
+<div align="center">
+  <img width="44%" src="docs/screenshots/litemode.gif" alt="AA Browser light mode live screenshot" />
+  <img width="44%" src="docs/screenshots/darkmode.gif" alt="AA Browser dark mode live screenshot" />
 </div>
 
 ---
@@ -103,26 +95,33 @@ Every contribution makes AA Browser better!
 
 <table width="100%">
   <tr>
-    <td align="center" valign="top" width="33%">
+    <td align="center" valign="top" width="25%">
       <a href="https://github.com/kododake">
         <img src="https://github.com/kododake.png?s=100" width="60" alt="kododake"/><br />
         <sub><b>kododake</b></sub>
       </a><br />
       <sub>Project Lead</sub>
     </td>
-    <td align="center" valign="top" width="33%">
+    <td align="center" valign="top" width="25%">
       <a href="https://github.com/cmacrowther">
         <img src="https://github.com/cmacrowther.png?s=100" width="60" alt="Colin Crowther"/><br />
         <sub><b>Colin Crowther</b></sub>
       </a><br />
       <sub>Design Improvements</sub>
     </td>
-    <td align="center" valign="top" width="33%">
+    <td align="center" valign="top" width="25%">
       <a href="https://github.com/jigneshbhavani">
         <img src="https://github.com/jigneshbhavani.png?s=100" width="60" alt="jigneshbhavani"/><br />
         <sub><b>jigneshbhavani</b></sub>
       </a><br />
       <sub>Microphone Support</sub>
+    </td>
+    <td align="center" valign="top" width="25%">
+      <a href="https://github.com/SaveEditors">
+        <img src="https://github.com/SaveEditors.png?s=100" width="60" alt="SaveEditors"/><br />
+        <sub><b>SaveEditors</b></sub>
+      </a><br />
+      <sub>Multi-tab support, Home screen</sub>
     </td>
   </tr>
 </table>
@@ -150,6 +149,9 @@ I care about the app's growth, but I care about your privacy even more. This app
 ## ☕ Support a Student Developer
 
 If AA Browser makes your "car life" better, please consider a donation! As a student developer on a tight budget, your support covers daily expenses.
+
+**GitHub Sponsor:**
+https://github.com/sponsors/kododake
 
 **Bitcoin (BTC):**
 `bc1qnpqpfq7e8pjtlqj7aa6x2y2c9ctnpts5u9lx7v`

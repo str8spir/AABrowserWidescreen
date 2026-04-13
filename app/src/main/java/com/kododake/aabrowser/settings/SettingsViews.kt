@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Typeface
 import android.net.Uri
@@ -22,12 +23,16 @@ import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.radiobutton.MaterialRadioButton
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.common.BitMatrix
+import com.google.zxing.qrcode.QRCodeWriter
 import com.kododake.aabrowser.R
 import com.kododake.aabrowser.data.BrowserPreferences
 import com.kododake.aabrowser.model.AppThemeMode
@@ -152,8 +157,8 @@ object SettingsViews {
         }
 
         val smallIconSize = context.resources.getDimensionPixelSize(R.dimen.icon_size_small)
-        val brightOnPrimary = getColorFromAttr(com.google.android.material.R.attr.colorOnPrimary)
         val onSurfaceColor = getColorFromAttr(com.google.android.material.R.attr.colorOnSurface)
+        val onSurfaceVariantColor = getColorFromAttr(com.google.android.material.R.attr.colorOnSurfaceVariant)
 
         val container = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
@@ -186,8 +191,9 @@ object SettingsViews {
             )
             radius = dp(16).toFloat()
             cardElevation = 0f
-            setCardBackgroundColor(getColorFromAttr(com.google.android.material.R.attr.colorPrimaryContainer))
-            strokeWidth = 0
+            setCardBackgroundColor(getColorFromAttr(com.google.android.material.R.attr.colorSurfaceContainerLow))
+            strokeWidth = dp(1)
+            strokeColor = getColorFromAttr(com.google.android.material.R.attr.colorOutlineVariant)
         }
         val headerInner = LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -202,21 +208,21 @@ object SettingsViews {
             id = R.id.settingsHeaderTitle
             text = context.getString(R.string.settings_title)
             setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_TitleLarge)
-            setTextColor(brightOnPrimary)
+            setTextColor(onSurfaceColor)
             typeface = Typeface.DEFAULT_BOLD
         })
         titleCol.addView(TextView(context).apply {
             text = context.getString(R.string.settings_subtitle)
             setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodySmall)
-            setTextColor(brightOnPrimary)
+            setTextColor(onSurfaceVariantColor)
             alpha = 0.8f
         })
         val backBtn = MaterialButton(context, null, androidx.appcompat.R.attr.borderlessButtonStyle).apply {
             id = R.id.buttonSettingsBack
             text = context.getString(R.string.menu_back)
-            setTextColor(brightOnPrimary)
+            setTextColor(onSurfaceColor)
             setIconResource(R.drawable.arrow_back_24px)
-            iconTint = ColorStateList.valueOf(brightOnPrimary)
+            iconTint = ColorStateList.valueOf(onSurfaceColor)
             iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
             iconSize = smallIconSize
             iconPadding = dp(8)
@@ -251,28 +257,34 @@ object SettingsViews {
             orientation = RadioGroup.VERTICAL
             setPadding(0, dp(4), 0, 0)
         }
+        val autoThemeButton = MaterialRadioButton(context).apply {
+            id = View.generateViewId()
+            text = context.getString(R.string.settings_theme_auto)
+        }
         val lightThemeButton = MaterialRadioButton(context).apply {
             id = View.generateViewId()
             text = context.getString(R.string.settings_theme_light)
         }
-        val amoledThemeButton = MaterialRadioButton(context).apply {
+        val darkThemeButton = MaterialRadioButton(context).apply {
             id = View.generateViewId()
-            text = context.getString(R.string.settings_theme_amoled)
+            text = context.getString(R.string.settings_theme_dark)
         }
+        themeGroup.addView(autoThemeButton)
         themeGroup.addView(lightThemeButton)
-        themeGroup.addView(amoledThemeButton)
+        themeGroup.addView(darkThemeButton)
         appearanceInner.addView(themeGroup)
 
         when (themeMode) {
-            AppThemeMode.AMOLED -> themeGroup.check(amoledThemeButton.id)
+            AppThemeMode.AUTO -> themeGroup.check(autoThemeButton.id)
             AppThemeMode.LIGHT -> themeGroup.check(lightThemeButton.id)
+            AppThemeMode.DARK -> themeGroup.check(darkThemeButton.id)
         }
 
         themeGroup.setOnCheckedChangeListener { _, checkedId ->
-            val selectedMode = if (checkedId == amoledThemeButton.id) {
-                AppThemeMode.AMOLED
-            } else {
-                AppThemeMode.LIGHT
+            val selectedMode = when (checkedId) {
+                lightThemeButton.id -> AppThemeMode.LIGHT
+                darkThemeButton.id -> AppThemeMode.DARK
+                else -> AppThemeMode.AUTO
             }
             if (selectedMode == BrowserPreferences.getThemeMode(context)) return@setOnCheckedChangeListener
             BrowserPreferences.setThemeMode(context, selectedMode)
@@ -909,45 +921,122 @@ object SettingsViews {
             setTextColor(onSurfaceColor)
             setPadding(0, dp(4), 0, 0)
         })
+        val sponsorUrl = "https://github.com/sponsors/kododake"
+
+        fun generateQrBitmap(data: String, sizePx: Int): Bitmap? {
+            return runCatching {
+                val matrix: BitMatrix = QRCodeWriter().encode(data, BarcodeFormat.QR_CODE, sizePx, sizePx)
+                Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888).apply {
+                    for (x in 0 until sizePx) {
+                        for (y in 0 until sizePx) {
+                            setPixel(x, y, if (matrix[x, y]) Color.BLACK else Color.WHITE)
+                        }
+                    }
+                }
+            }.getOrNull()
+        }
+
+        val donateTabGroup = MaterialButtonToggleGroup(context).apply {
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+                topMargin = dp(12)
+            }
+            isSingleSelection = true
+            isSelectionRequired = true
+        }
+        val githubTabButton = MaterialButton(context, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+            id = View.generateViewId()
+            text = context.getString(R.string.settings_donate_tab_github)
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+        val bitcoinTabButton = MaterialButton(context, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+            id = View.generateViewId()
+            text = context.getString(R.string.settings_donate_tab_bitcoin)
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+        donateTabGroup.addView(githubTabButton)
+        donateTabGroup.addView(bitcoinTabButton)
+        donateInner.addView(donateTabGroup)
+
         val donateRow = LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
             setPadding(0, dp(16), 0, 0)
             gravity = Gravity.CENTER_VERTICAL
         }
-        donateRow.addView(ImageView(context).apply {
+        val donateQrImage = ImageView(context).apply {
             layoutParams = LinearLayout.LayoutParams(dp(100), dp(100))
-            setImageResource(R.drawable.bitcoin_qr)
             setPadding(dp(1), dp(1), dp(1), dp(1))
             setBackgroundColor(Color.WHITE)
-        })
+        }
+        donateRow.addView(donateQrImage)
         val donateCol = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
                 marginStart = dp(16)
             }
         }
-        val bitcoinAddressView = TextView(context).apply {
+        val donateAddressView = TextView(context).apply {
             id = R.id.bitcoinAddress
-            text = context.getString(R.string.donate_bitcoin_address_value)
             setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodySmall)
+            setTextColor(onSurfaceColor)
         }
-        val copyBtn = MaterialButton(context, null, com.google.android.material.R.attr.materialButtonTonalStyle).apply {
+        val donateActionButton = MaterialButton(context, null, com.google.android.material.R.attr.materialButtonTonalStyle).apply {
             id = R.id.copyBitcoinButton
-            text = context.getString(R.string.donate_copy)
-            setIconResource(R.drawable.content_copy_24px)
             iconSize = smallIconSize
             iconPadding = dp(8)
-            iconTintMode = android.graphics.PorterDuff.Mode.SRC_IN
             backgroundTintList = ColorStateList.valueOf(getColorFromAttr(com.google.android.material.R.attr.colorSecondaryContainer))
             setTextColor(getColorFromAttr(com.google.android.material.R.attr.colorOnSecondaryContainer))
-            iconTint = ColorStateList.valueOf(getColorFromAttr(com.google.android.material.R.attr.colorOnSecondaryContainer))
             isClickable = true
             isFocusable = true
         }
-        donateCol.addView(bitcoinAddressView)
-        donateCol.addView(copyBtn)
+        donateCol.addView(donateAddressView)
+        donateCol.addView(donateActionButton)
         donateRow.addView(donateCol)
         donateInner.addView(donateRow)
+
+        fun applyDonateTab(isGithub: Boolean) {
+            if (isGithub) {
+                donateAddressView.text = sponsorUrl
+                val qrBitmap = generateQrBitmap(sponsorUrl, dp(100))
+                if (qrBitmap != null) {
+                    donateQrImage.setImageBitmap(qrBitmap)
+                } else {
+                    donateQrImage.setImageResource(R.drawable.ic_github)
+                }
+                donateActionButton.text = context.getString(R.string.settings_donate_open_github_sponsors)
+                donateActionButton.setIconResource(R.drawable.favorite_24px)
+                val pink = ColorStateList.valueOf(Color.parseColor("#EC407A"))
+                donateActionButton.iconTint = pink
+                donateActionButton.setOnClickListener {
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(sponsorUrl))
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        context.startActivity(intent)
+                    } catch (_: Exception) {
+                        Toast.makeText(context, R.string.error_generic_message, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } else {
+                donateAddressView.text = context.getString(R.string.donate_bitcoin_address_value)
+                donateQrImage.setImageResource(R.drawable.bitcoin_qr)
+                donateActionButton.text = context.getString(R.string.donate_copy)
+                donateActionButton.setIconResource(R.drawable.content_copy_24px)
+                val onSecondary = ColorStateList.valueOf(getColorFromAttr(com.google.android.material.R.attr.colorOnSecondaryContainer))
+                donateActionButton.iconTint = onSecondary
+                donateActionButton.setOnClickListener {
+                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    clipboard.setPrimaryClip(ClipData.newPlainText("Bitcoin Address", donateAddressView.text.toString()))
+                    Toast.makeText(context, R.string.donate_copied, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        donateTabGroup.check(githubTabButton.id)
+        applyDonateTab(isGithub = true)
+        donateTabGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (!isChecked) return@addOnButtonCheckedListener
+            applyDonateTab(isGithub = checkedId == githubTabButton.id)
+        }
+
         donateCard.addView(donateInner)
         container.addView(donateCard)
 
@@ -1033,12 +1122,6 @@ object SettingsViews {
 
         clearBackgroundButton.setOnClickListener {
             callbacks.onClearStartPageBackground?.invoke()
-        }
-
-        copyBtn.setOnClickListener {
-            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            clipboard.setPrimaryClip(ClipData.newPlainText("Bitcoin Address", bitcoinAddressView.text.toString()))
-            Toast.makeText(context, R.string.donate_copied, Toast.LENGTH_SHORT).show()
         }
 
         fun openUrl(url: String) {

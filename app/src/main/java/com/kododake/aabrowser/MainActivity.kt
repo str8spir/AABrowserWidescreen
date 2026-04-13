@@ -12,6 +12,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -38,6 +39,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
@@ -58,6 +60,7 @@ import com.kododake.aabrowser.web.updateDesktopMode
 import com.kododake.aabrowser.web.updatePageDarkening
 import com.kododake.aabrowser.web.updateUserAgentProfile
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.color.DynamicColors
 import com.google.android.material.textview.MaterialTextView
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
@@ -82,6 +85,7 @@ class MainActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private val autoHideMenuFab = Runnable {
         if (!::binding.isInitialized) return@Runnable
+        if (isShowingStartPage) return@Runnable
         if (BrowserPreferences.isQuickActionButtonAlwaysVisible(this)) return@Runnable
         binding.menuFab.hide()
     }
@@ -89,7 +93,7 @@ class MainActivity : AppCompatActivity() {
         if (!::binding.isInitialized) return@Runnable
         if (isInFullscreen() || binding.menuOverlay.isVisible) return@Runnable
         binding.menuFab.show()
-        if (!BrowserPreferences.isQuickActionButtonAlwaysVisible(this)) {
+        if (!isShowingStartPage && !BrowserPreferences.isQuickActionButtonAlwaysVisible(this)) {
             handler.postDelayed(autoHideMenuFab, MENU_BUTTON_AUTO_HIDE_DELAY_MS)
         }
     }
@@ -116,6 +120,10 @@ class MainActivity : AppCompatActivity() {
     private var shouldForceSessionRestore: Boolean = false
     private var isShowingStartPage: Boolean = false
     private var isSyncingAddressFields: Boolean = false
+    private var isStartPagePhotoOnlyMode: Boolean = false
+    private var loadedStartPageBackgroundUri: String? = null
+    private var loadedStartPageBackgroundBitmap: Bitmap? = null
+    private var cachedStartPageGradientSignature: Int = 0
 
     override fun attachBaseContext(newBase: Context?) {
         if (newBase == null) {
@@ -126,6 +134,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        DynamicColors.applyToActivityIfAvailable(this)
         AppCompatDelegate.setDefaultNightMode(BrowserPreferences.getThemeMode(this).nightMode)
         super.onCreate(savedInstanceState)
         shouldForceSessionRestore = savedInstanceState != null
@@ -157,6 +166,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         webView?.onResume()
+        applyMenuHeaderColors()
         refreshHomePageMode()
         refreshBookmarks()
         refreshTabs()
@@ -176,6 +186,9 @@ class MainActivity : AppCompatActivity() {
         handler.removeCallbacks(autoHideMenuFab)
         handler.removeCallbacks(showMenuFabRunnable)
         exitFullscreen()
+        loadedStartPageBackgroundBitmap?.recycle()
+        loadedStartPageBackgroundBitmap = null
+        loadedStartPageBackgroundUri = null
         browserTabs.forEach { tab ->
             tab.speechBridge.destroy()
             tab.webView.releaseCompletely()
@@ -198,6 +211,47 @@ class MainActivity : AppCompatActivity() {
         val typedValue = TypedValue()
         theme.resolveAttribute(attrRes, typedValue, true)
         return typedValue.data
+    }
+    
+    private fun resolveReadableTextColor(
+        backgroundColor: Int,
+        preferredColor: Int,
+        fallbackColor: Int
+    ): Int {
+        val preferredContrast = ColorUtils.calculateContrast(preferredColor, backgroundColor)
+        val fallbackContrast = ColorUtils.calculateContrast(fallbackColor, backgroundColor)
+        return if (preferredContrast >= fallbackContrast) preferredColor else fallbackColor
+    }
+
+    private fun applyMenuHeaderColors() {
+        val headerBackground = resolveThemeColor(com.google.android.material.R.attr.colorSurfaceContainerLow)
+        val readableText = resolveReadableTextColor(
+            backgroundColor = headerBackground,
+            preferredColor = resolveThemeColor(com.google.android.material.R.attr.colorOnSurface),
+            fallbackColor = resolveThemeColor(com.google.android.material.R.attr.colorOnPrimaryContainer)
+        )
+        val readableTint = ColorStateList.valueOf(readableText)
+
+        binding.menuTitle.setTextColor(readableText)
+        binding.pageTitle.setTextColor(readableText)
+        binding.bookmarkManagerTitle.setTextColor(readableText)
+        binding.bookmarkManagerSubtitle.setTextColor(readableText)
+        binding.tabManagerTitle.setTextColor(readableText)
+        binding.tabManagerSubtitle.setTextColor(readableText)
+        binding.checkLatestViewTitle.setTextColor(readableText)
+        binding.checkLatestViewSubtitle.setTextColor(readableText)
+
+        binding.buttonClose.setTextColor(readableText)
+        binding.buttonClose.iconTint = readableTint
+        binding.buttonBookmarkManagerBack.setTextColor(readableText)
+        binding.buttonBookmarkManagerBack.iconTint = readableTint
+        binding.buttonBookmarkManagerBack.strokeColor = readableTint
+        binding.buttonTabManagerBack.setTextColor(readableText)
+        binding.buttonTabManagerBack.iconTint = readableTint
+        binding.buttonTabManagerBack.strokeColor = readableTint
+        binding.buttonCheckLatestBack.setTextColor(readableText)
+        binding.buttonCheckLatestBack.iconTint = readableTint
+        binding.buttonCheckLatestBack.strokeColor = readableTint
     }
 
     private fun ensureNotificationPermissionIfNeeded() {
@@ -475,7 +529,7 @@ class MainActivity : AppCompatActivity() {
         dialog.setCanceledOnTouchOutside(false)
         dialog.show()
         dialog.getButton(DialogInterface.BUTTON_NEUTRAL)?.setTextColor(
-            ContextCompat.getColor(this, android.R.color.holo_red_dark)
+            resolveThemeColor(androidx.appcompat.R.attr.colorError)
         )
     }
 
@@ -659,6 +713,12 @@ class MainActivity : AppCompatActivity() {
                     if (isShowingStartPage) {
                         refreshStartPage()
                     }
+                    if (binding.bookmarkManagerRoot.isVisible) {
+                        refreshBookmarks()
+                    }
+                    if (binding.tabManagerRoot.isVisible) {
+                        refreshTabs()
+                    }
                 }
             },
             onProgressChange = { progress ->
@@ -741,6 +801,13 @@ class MainActivity : AppCompatActivity() {
         currentUrl = selectedTab.currentUrl
         currentPageTitle = selectedTab.currentTitle
 
+        if (binding.addressEdit.text?.toString() != selectedTab.currentUrl) {
+            binding.addressEdit.setText(selectedTab.currentUrl)
+            binding.addressEdit.setSelection(binding.addressEdit.text?.length ?: 0)
+        }
+        syncAddressFieldsFrom(binding.addressEdit)
+        updateAddressClearButtons()
+
         if (selectedTab.currentUrl.isBlank()) {
             showStartPage()
         } else {
@@ -806,7 +873,6 @@ class MainActivity : AppCompatActivity() {
             getString(R.string.menu_tabs)
         }
         binding.buttonTabs.text = tabsLabel
-        binding.buttonStartPageTabs.text = tabsLabel
 
         val canAddMoreTabs = browserTabs.size < BrowserPreferences.MAX_OPEN_TABS
         binding.buttonNewTab.isEnabled = canAddMoreTabs
@@ -834,17 +900,32 @@ class MainActivity : AppCompatActivity() {
 
         browserTabs.forEach { tab ->
             val isActive = tab.id == activeTabId
+            val cardBackgroundColor = resolveThemeColor(
+                if (isActive) {
+                    com.google.android.material.R.attr.colorPrimaryContainer
+                } else {
+                    com.google.android.material.R.attr.colorSurfaceContainer
+                }
+            )
+            val primaryTextColor = resolveReadableTextColor(
+                backgroundColor = cardBackgroundColor,
+                preferredColor = resolveThemeColor(
+                    if (isActive) {
+                        com.google.android.material.R.attr.colorOnPrimaryContainer
+                    } else {
+                        com.google.android.material.R.attr.colorOnSurface
+                    }
+                ),
+                fallbackColor = resolveThemeColor(com.google.android.material.R.attr.colorOnSurface)
+            )
+            val secondaryTextColor = resolveReadableTextColor(
+                backgroundColor = cardBackgroundColor,
+                preferredColor = resolveThemeColor(com.google.android.material.R.attr.colorOnSurfaceVariant),
+                fallbackColor = primaryTextColor
+            )
             val card = com.google.android.material.card.MaterialCardView(this).apply {
                 radius = 12 * density
-                setCardBackgroundColor(
-                    resolveThemeColor(
-                        if (isActive) {
-                            com.google.android.material.R.attr.colorPrimaryContainer
-                        } else {
-                            com.google.android.material.R.attr.colorSurfaceContainer
-                        }
-                    )
-                )
+                setCardBackgroundColor(cardBackgroundColor)
                 strokeWidth = (1 * density).toInt()
                 strokeColor = resolveThemeColor(com.google.android.material.R.attr.colorOutlineVariant)
                 setOnClickListener {
@@ -857,9 +938,19 @@ class MainActivity : AppCompatActivity() {
                 gravity = android.view.Gravity.CENTER_VERTICAL
                 setPadding((12 * density).toInt(), (12 * density).toInt(), (8 * density).toInt(), (12 * density).toInt())
             }
+            row.addView(
+                createSiteIconBadge(
+                    url = tab.currentUrl.takeIf { isActiveWebsiteUrl(it) },
+                    sizeDp = 40f,
+                    cornerRadiusDp = 12f,
+                    paddingDp = 6f,
+                    backgroundColor = resolveThemeColor(com.google.android.material.R.attr.colorSurfaceContainerHighest)
+                )
+            )
             val textContainer = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                    marginStart = (12 * density).toInt()
                     marginEnd = (8 * density).toInt()
                 }
             }
@@ -867,7 +958,7 @@ class MainActivity : AppCompatActivity() {
                 textContainer.addView(MaterialTextView(this).apply {
                     text = getString(R.string.tab_manager_active_badge)
                     setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_LabelMedium)
-                    setTextColor(resolveThemeColor(androidx.appcompat.R.attr.colorPrimary))
+                    setTextColor(primaryTextColor)
                 })
             }
             textContainer.addView(MaterialTextView(this).apply {
@@ -875,6 +966,7 @@ class MainActivity : AppCompatActivity() {
                 maxLines = 1
                 ellipsize = TextUtils.TruncateAt.END
                 setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodyLarge)
+                setTextColor(primaryTextColor)
             })
             textContainer.addView(MaterialTextView(this).apply {
                 text = if (tab.currentUrl.isBlank()) {
@@ -885,6 +977,7 @@ class MainActivity : AppCompatActivity() {
                 maxLines = 1
                 ellipsize = TextUtils.TruncateAt.END
                 setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodySmall)
+                setTextColor(secondaryTextColor)
                 alpha = 0.7f
             })
 
@@ -987,13 +1080,10 @@ class MainActivity : AppCompatActivity() {
 
         val tonalIconColor = resolveThemeColor(com.google.android.material.R.attr.colorOnSecondaryContainer)
         val tonalColorStateList = android.content.res.ColorStateList.valueOf(tonalIconColor)
-        val primaryColor = resolveThemeColor(androidx.appcompat.R.attr.colorPrimary)
-        val primaryColorStateList = android.content.res.ColorStateList.valueOf(primaryColor)
-
         val navButtons = listOf(
             binding.buttonBack, binding.buttonReload, binding.buttonForward,
             binding.buttonBookmarks, binding.buttonSettings, binding.buttonTabs,
-            binding.buttonNewTab, binding.buttonExternalGithub
+            binding.buttonNewTab
         )
 
         navButtons.forEach { btn ->
@@ -1003,7 +1093,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.buttonExternal.setOnClickListener { showQrCodeView() }
-        binding.buttonExternalGithub.iconTint = primaryColorStateList
+        binding.buttonExternalGithub.iconTint = null
         binding.buttonExternalGithub.setOnClickListener { openUriExternally(Uri.parse(GITHUB_REPO_URL)) }
         binding.buttonBookmarks.setOnClickListener { showBookmarkManager() }
         binding.buttonTabs.setOnClickListener { showTabManager() }
@@ -1041,14 +1131,6 @@ class MainActivity : AppCompatActivity() {
             hideMenuOverlay()
         }
         binding.buttonSettings.setOnClickListener { showSettingsView() }
-        binding.buttonStartPageBookmarks.setOnClickListener {
-            showMenuOverlay()
-            showBookmarkManager()
-        }
-        binding.buttonStartPageTabs.setOnClickListener {
-            showMenuOverlay()
-            showTabManager()
-        }
         binding.buttonStartPageResume.setOnClickListener {
             val resumeUrl = BrowserPreferences.getLastVisitedUrl(this)
             if (resumeUrl.isNullOrBlank()) {
@@ -1057,11 +1139,63 @@ class MainActivity : AppCompatActivity() {
                 loadUrlFromIntent(resumeUrl)
             }
         }
+        binding.buttonStartPagePhotoOnly.setOnClickListener {
+            isStartPagePhotoOnlyMode = !isStartPagePhotoOnlyMode
+            applyStartPagePhotoOnlyMode()
+            if (isStartPagePhotoOnlyMode) {
+                Toast.makeText(this, R.string.start_page_photo_only_hint, Toast.LENGTH_SHORT).show()
+            }
+        }
+        binding.startPageRoot.setOnClickListener {
+            if (isStartPagePhotoOnlyMode) {
+                isStartPagePhotoOnlyMode = false
+                applyStartPagePhotoOnlyMode()
+            }
+        }
+
+        fun applyStartPageDonateTab(isGithub: Boolean) {
+            if (isGithub) {
+                binding.startPageDonateAddress.text = START_PAGE_SPONSOR_URL
+                val qrBitmap = generateQrCode(START_PAGE_SPONSOR_URL)
+                if (qrBitmap != null) {
+                    binding.startPageDonateQrImage.setImageBitmap(qrBitmap)
+                } else {
+                    binding.startPageDonateQrImage.setImageResource(R.drawable.ic_github)
+                }
+                binding.startPageDonateActionButton.text = getString(R.string.settings_donate_open_github_sponsors)
+                binding.startPageDonateActionButton.setIconResource(R.drawable.favorite_24px)
+                binding.startPageDonateActionButton.iconTint = ColorStateList.valueOf(Color.parseColor("#EC407A"))
+                binding.startPageDonateActionButton.setOnClickListener {
+                    openUriExternally(Uri.parse(START_PAGE_SPONSOR_URL))
+                }
+            } else {
+                binding.startPageDonateAddress.text = getString(R.string.donate_bitcoin_address_value)
+                binding.startPageDonateQrImage.setImageResource(R.drawable.bitcoin_qr)
+                binding.startPageDonateActionButton.text = getString(R.string.donate_copy)
+                binding.startPageDonateActionButton.setIconResource(R.drawable.content_copy_24px)
+                binding.startPageDonateActionButton.iconTint = ColorStateList.valueOf(
+                    resolveThemeColor(com.google.android.material.R.attr.colorOnSecondaryContainer)
+                )
+                binding.startPageDonateActionButton.setOnClickListener {
+                    val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Bitcoin Address", binding.startPageDonateAddress.text.toString()))
+                    Toast.makeText(this, R.string.donate_copied, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        binding.startPageDonateTabGroup.check(binding.startPageDonateTabGithub.id)
+        applyStartPageDonateTab(isGithub = true)
+        binding.startPageDonateTabGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (!isChecked) return@addOnButtonCheckedListener
+            applyStartPageDonateTab(isGithub = checkedId == binding.startPageDonateTabGithub.id)
+        }
 
         binding.persistentButtonMenu.setOnClickListener { showMenuOverlay() }
         binding.menuFab.setOnClickListener { handleQuickActionButtonPressed() }
         binding.buttonClose.setOnClickListener { hideMenuOverlay() }
         binding.menuOverlayScrim.setOnClickListener { hideMenuOverlay() }
+        applyMenuHeaderColors()
 
         setupManualDragLogic()
 
@@ -1227,7 +1361,7 @@ class MainActivity : AppCompatActivity() {
         layoutParams.setMargins(margin, topOffset, margin, margin)
         binding.menuFab.layoutParams = layoutParams
 
-        if (BrowserPreferences.isQuickActionButtonAlwaysVisible(this)) {
+        if (isShowingStartPage || BrowserPreferences.isQuickActionButtonAlwaysVisible(this)) {
             handler.removeCallbacks(showMenuFabRunnable)
             handler.removeCallbacks(autoHideMenuFab)
             if (!isInFullscreen() && !binding.menuOverlay.isVisible) {
@@ -1468,7 +1602,7 @@ class MainActivity : AppCompatActivity() {
         handler.removeCallbacks(showMenuFabRunnable)
         handler.removeCallbacks(autoHideMenuFab)
         if (isInFullscreen() || binding.menuOverlay.isVisible) return
-        if (BrowserPreferences.isQuickActionButtonAlwaysVisible(this)) {
+        if (isShowingStartPage || BrowserPreferences.isQuickActionButtonAlwaysVisible(this)) {
             binding.menuFab.show()
             return
         }
@@ -1677,6 +1811,15 @@ class MainActivity : AppCompatActivity() {
                 gravity = android.view.Gravity.CENTER_VERTICAL
                 setPadding((12 * density).toInt(), (12 * density).toInt(), (8 * density).toInt(), (12 * density).toInt())
             }
+            row.addView(
+                createSiteIconBadge(
+                    url = bookmark,
+                    sizeDp = 40f,
+                    cornerRadiusDp = 12f,
+                    paddingDp = 6f,
+                    backgroundColor = resolveThemeColor(com.google.android.material.R.attr.colorSurfaceContainerHighest)
+                )
+            )
             val textContainer = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 layoutParams = LinearLayout.LayoutParams(0, -2, 1f).apply { marginStart = (12 * density).toInt() }
@@ -1685,7 +1828,7 @@ class MainActivity : AppCompatActivity() {
                 text = getString(R.string.start_page_slot_number, (startPageSlot + 1).coerceAtLeast(1))
                 visibility = if (startPageSlot >= 0) View.VISIBLE else View.GONE
                 setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_LabelMedium)
-                setTextColor(resolveThemeColor(androidx.appcompat.R.attr.colorPrimary))
+                setTextColor(resolveThemeColor(com.google.android.material.R.attr.colorOnSurfaceVariant))
             })
             textContainer.addView(MaterialTextView(this).apply {
                 text = displayLabelForUrl(bookmark)
@@ -1828,6 +1971,59 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun resolveCachedSiteIcon(url: String?): Bitmap? {
+        val cachedIcon = SiteIconCache.getCachedIcon(this, url)
+        if (cachedIcon == null && !url.isNullOrBlank()) {
+            prefetchSiteIcon(url)
+        }
+        return cachedIcon
+    }
+
+    private fun createSiteIconBadge(
+        url: String?,
+        sizeDp: Float,
+        cornerRadiusDp: Float,
+        paddingDp: Float,
+        backgroundColor: Int,
+        showAddOnEmptyUrl: Boolean = false
+    ): View {
+        val density = resources.displayMetrics.density
+        val cachedIcon = resolveCachedSiteIcon(url)
+        return FrameLayout(this).apply {
+            val sizePx = (sizeDp * density).toInt()
+            layoutParams = LinearLayout.LayoutParams(sizePx, sizePx)
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = cornerRadiusDp * density
+                setColor(backgroundColor)
+            }
+
+            addView(ImageView(this@MainActivity).apply {
+                layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
+                scaleType = ImageView.ScaleType.FIT_CENTER
+                val paddingPx = (paddingDp * density).toInt()
+                setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
+                if (cachedIcon != null) {
+                    setImageBitmap(cachedIcon)
+                } else {
+                    setImageResource(R.drawable.public_24px)
+                }
+                visibility = if (showAddOnEmptyUrl && url.isNullOrBlank()) View.GONE else View.VISIBLE
+            })
+
+            if (showAddOnEmptyUrl) {
+                addView(MaterialTextView(this@MainActivity).apply {
+                    layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
+                    gravity = android.view.Gravity.CENTER
+                    text = "+"
+                    setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_TitleMedium)
+                    setTextColor(resolveThemeColor(com.google.android.material.R.attr.colorOnSecondaryContainer))
+                    visibility = if (url.isNullOrBlank()) View.VISIBLE else View.GONE
+                })
+            }
+        }
+    }
+
     private fun isHomePageEnabled(): Boolean {
         return !BrowserPreferences.getHomePageUrl(this).isNullOrBlank()
     }
@@ -1874,12 +2070,14 @@ class MainActivity : AppCompatActivity() {
         }
         if (isInFullscreen()) exitFullscreen()
         isShowingStartPage = true
+        isStartPagePhotoOnlyMode = false
         binding.startPageRoot.visibility = View.VISIBLE
         webView?.visibility = View.INVISIBLE
         binding.pageTitle.text = getString(R.string.start_page_title)
         binding.addressEdit.setText("")
         updateConnectionSecurityIcon(null)
         refreshStartPage()
+        applyStartPagePhotoOnlyMode()
         updateNavigationButtons()
         showMenuButtonTemporarily()
     }
@@ -1887,6 +2085,8 @@ class MainActivity : AppCompatActivity() {
     private fun hideStartPage() {
         if (!isShowingStartPage && binding.startPageRoot.visibility != View.VISIBLE) return
         isShowingStartPage = false
+        isStartPagePhotoOnlyMode = false
+        applyStartPagePhotoOnlyMode()
         binding.startPageRoot.visibility = View.GONE
         webView?.visibility = View.VISIBLE
         binding.pageTitle.text = currentPageTitle.ifBlank {
@@ -1905,6 +2105,23 @@ class MainActivity : AppCompatActivity() {
         refreshBookmarks()
     }
 
+    private fun applyStartPagePhotoOnlyMode() {
+        if (!::binding.isInitialized) return
+        binding.startPageScroll.visibility = if (isStartPagePhotoOnlyMode) View.GONE else View.VISIBLE
+        binding.startPageDimOverlay.visibility = if (isStartPagePhotoOnlyMode) View.GONE else View.VISIBLE
+        binding.buttonStartPagePhotoOnly.text = getString(
+            if (isStartPagePhotoOnlyMode) R.string.start_page_show_ui else R.string.start_page_photo_only
+        )
+
+        if (isStartPagePhotoOnlyMode) {
+            handler.removeCallbacks(showMenuFabRunnable)
+            handler.removeCallbacks(autoHideMenuFab)
+            binding.menuFab.hide()
+        } else if (isShowingStartPage) {
+            showMenuButtonTemporarily()
+        }
+    }
+
     private fun refreshStartPage() {
         refreshStartPageQuickLinks()
         refreshStartPageBackground()
@@ -1912,18 +2129,31 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun refreshStartPageBackground() {
+        applyDynamicStartPageGradientBackground()
         val backgroundUri = BrowserPreferences.getStartPageBackgroundUri(this)
         if (backgroundUri.isNullOrBlank()) {
+            loadedStartPageBackgroundBitmap?.recycle()
+            loadedStartPageBackgroundBitmap = null
+            loadedStartPageBackgroundUri = null
             binding.startPageBackgroundImage.setImageBitmap(null)
             binding.startPageBackgroundImage.visibility = View.GONE
             return
         }
 
-        val bitmap = runCatching {
-            contentResolver.openInputStream(Uri.parse(backgroundUri))?.use { input ->
-                BitmapFactory.decodeStream(input)
-            }
-        }.getOrNull()
+        if (backgroundUri == loadedStartPageBackgroundUri && loadedStartPageBackgroundBitmap != null) {
+            binding.startPageBackgroundImage.setImageBitmap(loadedStartPageBackgroundBitmap)
+            binding.startPageBackgroundImage.visibility = View.VISIBLE
+            return
+        }
+
+        val reqWidth = resources.displayMetrics.widthPixels.coerceAtLeast(1)
+        val reqHeight = resources.displayMetrics.heightPixels.coerceAtLeast(1)
+
+        val bitmap = decodeSampledBitmapFromUri(Uri.parse(backgroundUri), reqWidth, reqHeight)
+
+        loadedStartPageBackgroundBitmap?.recycle()
+        loadedStartPageBackgroundBitmap = bitmap
+        loadedStartPageBackgroundUri = if (bitmap != null) backgroundUri else null
 
         if (bitmap != null) {
             binding.startPageBackgroundImage.setImageBitmap(bitmap)
@@ -1932,6 +2162,97 @@ class MainActivity : AppCompatActivity() {
             binding.startPageBackgroundImage.setImageBitmap(null)
             binding.startPageBackgroundImage.visibility = View.GONE
         }
+    }
+
+    private fun applyDynamicStartPageGradientBackground() {
+        val baseSurface = resolveThemeColor(com.google.android.material.R.attr.colorSurface)
+        val primaryContainer = resolveThemeColor(com.google.android.material.R.attr.colorPrimaryContainer)
+        val secondaryContainer = resolveThemeColor(com.google.android.material.R.attr.colorSecondaryContainer)
+        val tertiaryContainer = resolveThemeColor(com.google.android.material.R.attr.colorTertiaryContainer)
+
+        val signature = baseSurface xor primaryContainer xor secondaryContainer xor tertiaryContainer
+        if (cachedStartPageGradientSignature == signature) return
+
+        val linearStart = ColorUtils.blendARGB(baseSurface, secondaryContainer, 0.30f)
+        val linearMid = ColorUtils.blendARGB(baseSurface, tertiaryContainer, 0.28f)
+        val linearEnd = ColorUtils.blendARGB(baseSurface, primaryContainer, 0.30f)
+
+        val ribbonA = ColorUtils.blendARGB(primaryContainer, tertiaryContainer, 0.45f)
+        val ribbonB = ColorUtils.blendARGB(secondaryContainer, primaryContainer, 0.50f)
+        val ribbonC = ColorUtils.blendARGB(tertiaryContainer, secondaryContainer, 0.42f)
+
+        val baseLayer = GradientDrawable(
+            GradientDrawable.Orientation.TL_BR,
+            intArrayOf(linearStart, linearMid, linearEnd)
+        ).apply {
+            gradientType = GradientDrawable.LINEAR_GRADIENT
+        }
+
+        val blobA = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            gradientType = GradientDrawable.RADIAL_GRADIENT
+            gradientRadius = resources.displayMetrics.density * 460f
+            setGradientCenter(0.18f, 0.22f)
+            colors = intArrayOf(ColorUtils.setAlphaComponent(ribbonA, 170), Color.TRANSPARENT)
+        }
+
+        val blobB = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            gradientType = GradientDrawable.RADIAL_GRADIENT
+            gradientRadius = resources.displayMetrics.density * 520f
+            setGradientCenter(0.78f, 0.30f)
+            colors = intArrayOf(ColorUtils.setAlphaComponent(ribbonB, 160), Color.TRANSPARENT)
+        }
+
+        val blobC = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            gradientType = GradientDrawable.RADIAL_GRADIENT
+            gradientRadius = resources.displayMetrics.density * 540f
+            setGradientCenter(0.55f, 0.82f)
+            colors = intArrayOf(ColorUtils.setAlphaComponent(ribbonC, 150), Color.TRANSPARENT)
+        }
+
+        binding.startPageRoot.background = LayerDrawable(arrayOf(baseLayer, blobA, blobB, blobC))
+        cachedStartPageGradientSignature = signature
+    }
+
+    private fun decodeSampledBitmapFromUri(uri: Uri, reqWidth: Int, reqHeight: Int): Bitmap? {
+        val boundsOptions = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+
+        val hasBounds = runCatching {
+            contentResolver.openInputStream(uri)?.use { input ->
+                BitmapFactory.decodeStream(input, null, boundsOptions)
+            }
+            boundsOptions.outWidth > 0 && boundsOptions.outHeight > 0
+        }.getOrDefault(false)
+
+        if (!hasBounds) return null
+
+        val sampleSize = calculateInSampleSize(boundsOptions.outWidth, boundsOptions.outHeight, reqWidth, reqHeight)
+        val decodeOptions = BitmapFactory.Options().apply {
+            inSampleSize = sampleSize
+            inPreferredConfig = Bitmap.Config.RGB_565
+        }
+
+        return runCatching {
+            contentResolver.openInputStream(uri)?.use { input ->
+                BitmapFactory.decodeStream(input, null, decodeOptions)
+            }
+        }.getOrNull()
+    }
+
+    private fun calculateInSampleSize(srcWidth: Int, srcHeight: Int, reqWidth: Int, reqHeight: Int): Int {
+        var inSampleSize = 1
+        if (srcHeight > reqHeight || srcWidth > reqWidth) {
+            var halfHeight = srcHeight / 2
+            var halfWidth = srcWidth / 2
+            while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2
+            }
+        }
+        return inSampleSize.coerceAtLeast(1)
     }
 
     private fun refreshStartPageQuickLinks() {
@@ -1972,10 +2293,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun createStartPageSlotCard(slotIndex: Int, url: String?): View {
         val density = resources.displayMetrics.density
-        val cachedIcon = SiteIconCache.getCachedIcon(this, url)
-        if (cachedIcon == null && !url.isNullOrBlank()) {
-            prefetchSiteIcon(url)
-        }
         return com.google.android.material.card.MaterialCardView(this).apply {
             radius = 18 * density
             strokeWidth = (1 * density).toInt()
@@ -1997,49 +2314,22 @@ class MainActivity : AppCompatActivity() {
                 addView(LinearLayout(this@MainActivity).apply {
                     orientation = LinearLayout.HORIZONTAL
                     gravity = android.view.Gravity.CENTER_VERTICAL
-
-                    addView(FrameLayout(this@MainActivity).apply {
-                        val size = (48 * density).toInt()
-                        layoutParams = LinearLayout.LayoutParams(size, size)
-                        background = GradientDrawable().apply {
-                            shape = GradientDrawable.RECTANGLE
-                            cornerRadius = 14 * density
-                            setColor(
+                    addView(
+                        createSiteIconBadge(
+                            url = url,
+                            sizeDp = 48f,
+                            cornerRadiusDp = 14f,
+                            paddingDp = 8f,
+                            backgroundColor = resolveThemeColor(
                                 if (url.isNullOrBlank()) {
-                                    resolveThemeColor(com.google.android.material.R.attr.colorSecondaryContainer)
+                                    com.google.android.material.R.attr.colorSecondaryContainer
                                 } else {
-                                    resolveThemeColor(com.google.android.material.R.attr.colorPrimaryContainer)
+                                    com.google.android.material.R.attr.colorPrimaryContainer
                                 }
-                            )
-                        }
-
-                        addView(ImageView(this@MainActivity).apply {
-                            layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
-                            scaleType = ImageView.ScaleType.CENTER_INSIDE
-                            setPadding((10 * density).toInt(), (10 * density).toInt(), (10 * density).toInt(), (10 * density).toInt())
-                            setImageBitmap(cachedIcon)
-                            visibility = if (cachedIcon != null) View.VISIBLE else View.GONE
-                        })
-
-                        addView(MaterialTextView(this@MainActivity).apply {
-                            layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
-                            gravity = android.view.Gravity.CENTER
-                            text = if (url.isNullOrBlank()) {
-                                "+"
-                            } else {
-                                displayLabelForUrl(url).firstOrNull()?.uppercaseChar()?.toString() ?: "?"
-                            }
-                            setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_TitleMedium)
-                            setTextColor(
-                                if (url.isNullOrBlank()) {
-                                    resolveThemeColor(com.google.android.material.R.attr.colorOnSecondaryContainer)
-                                } else {
-                                    resolveThemeColor(com.google.android.material.R.attr.colorOnPrimaryContainer)
-                                }
-                            )
-                            visibility = if (cachedIcon == null) View.VISIBLE else View.GONE
-                        })
-                    })
+                            ),
+                            showAddOnEmptyUrl = true
+                        )
+                    )
 
                     addView(MaterialTextView(this@MainActivity).apply {
                         layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
@@ -2250,6 +2540,7 @@ class MainActivity : AppCompatActivity() {
         private const val MENU_BUTTON_AUTO_HIDE_DELAY_MS = 3000L
         private const val MENU_BUTTON_SHOW_DELAY_MS = 500L
         private const val GITHUB_REPO_URL = "https://github.com/kododake/AABrowser"
+        private const val START_PAGE_SPONSOR_URL = "https://github.com/sponsors/kododake"
         private const val KEEP_ANDROID_OPEN_URL = "https://keepandroidopen.org"
         private const val FREE_DROID_WARN_SOLUTIONS_URL = "https://github.com/woheller69/FreeDroidWarn?tab=readme-ov-file#solutions"
         private const val FREE_DROID_WARN_VERSION_KEY = "versionCodeWarn"

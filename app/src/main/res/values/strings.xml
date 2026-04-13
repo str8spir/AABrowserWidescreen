@@ -65,10 +65,11 @@
     <string name="settings_subtitle">Browser Preferences</string>
     <string name="settings_appearance">Appearance</string>
     <string name="settings_appearance_description">Choose the app theme and optional experimental darkening for web content.</string>
+    <string name="settings_theme_auto">Auto</string>
     <string name="settings_theme_light">Light</string>
-    <string name="settings_theme_amoled">AMOLED dark</string>
+    <string name="settings_theme_dark">Dark</string>
     <string name="settings_beta_dark_pages">Beta: darken web pages</string>
-    <string name="settings_beta_dark_pages_description">Uses WebView algorithmic darkening when available. Best results with AMOLED dark mode enabled.</string>
+    <string name="settings_beta_dark_pages_description">Uses WebView algorithmic darkening when available. Best results with dark mode enabled.</string>
     <string name="settings_display_scale">Display scale</string>
     <string name="settings_display_scale_description">Scale the browser UI and page content together. Applying a new value reloads the screen.</string>
     <string name="settings_scale_option">%1$d%%</string>
@@ -137,13 +138,16 @@
     
     <string name="settings_donate">Donate</string>
     <string name="settings_donate_description">If you find this app useful, please consider supporting me with a donation. It really fuels my motivation to keep improving it!</string>
+    <string name="settings_donate_tab_github">GitHub Sponsors</string>
+    <string name="settings_donate_tab_bitcoin">Bitcoin</string>
+    <string name="settings_donate_open_github_sponsors">Open Sponsors Page</string>
     <string name="donate_bitcoin_address">Bitcoin Address</string>
     <string name="donate_bitcoin_address_value">bc1qnpqpfq7e8pjtlqj7aa6x2y2c9ctnpts5u9lx7v</string>
     <string name="donate_copy">Copy</string>
     <string name="donate_copied">Address copied to clipboard</string>
 
     <string name="settings_donors">Donors</string>
-    <string name="settings_donors_description">No donations yet! Be the first to support the project and let us know on the Discussions page to see your name featured here.</string>
+    <string name="settings_donors_description">No donations yet😢</string>
     
     <string name="settings_license">License</string>
     <string name="settings_license_description">This application and its source code are licensed under the GNU General Public License version 3 (GPLv3). If you incorporate this application or use any of its code, you must include clear attribution to the repository: https://github.com/kododake/AABrowser</string>
@@ -170,6 +174,9 @@
     <string name="start_page_open_bookmarks">Bookmarks</string>
     <string name="start_page_open_tabs">Tabs</string>
     <string name="start_page_resume_last_page">Resume Last Page</string>
+    <string name="start_page_photo_only">Photo</string>
+    <string name="start_page_show_ui">Show UI</string>
+    <string name="start_page_photo_only_hint">Tap anywhere to show controls again.</string>
     <string name="start_page_no_last_page">No last page to resume yet.</string>
     <string name="start_page_slot_empty_title">Empty Slot</string>
     <string name="start_page_slot_empty_subtitle">Add a site from bookmarks.</string>
