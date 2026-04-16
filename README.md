@@ -20,13 +20,24 @@ This fork addresses the "black bar" issue common on ultra-wide head units by int
 ### 🏝️ The Floating Control Island
 Designed specifically for **32:9 aspect ratios**, this UI element only appears when a video enters fullscreen mode. It allows you to:
 * **Zoom In/Out:** Incremental magnification to perfectly fit the video to your wide display.
+<img width="1280" height="960" alt="photo_2026-04-16_12-54-49 (3)" src="https://github.com/user-attachments/assets/6173d02a-1aef-4b0d-b7fa-8d6f0851ac3f" />
+
 * **Fill-to-Crop:** Utilize the full width of your dashboard, eliminating pillarboxing.
-* **Granular Control:** Precise +/- adjustments to find the sweet spot between content visibility and screen coverage.
-* **Overflow Lock:** Automatically locks document scrolling when zooming to keep the video perfectly centered.
+
+<img width="1280" height="493" alt="photo_2026-04-16_12-54-48" src="https://github.com/user-attachments/assets/ebecf68a-8cf6-426c-a720-4482b1cc8394" />
   
+* **Granular Control:** Precise +/- adjustments to find the sweet spot between content visibility and screen coverage.
+
+<img width="1280" height="551" alt="photo_2026-04-16_12-54-49" src="https://github.com/user-attachments/assets/687bd348-49f1-4b3a-809b-e59a99ce4025" />
+
+Other examples
 <img width="1024" height="498" alt="image" src="https://github.com/user-attachments/assets/9bfa5d5b-4fb3-4c05-8be4-1d08baab6710" />
 <img width="1024" height="588" alt="image" src="https://github.com/user-attachments/assets/cb4cb8b7-6657-462e-b32a-5aba711fcaba" />
 <img width="1024" height="520" alt="image" src="https://github.com/user-attachments/assets/1879c6c0-72b8-4062-8f9e-e5f4ce236062" />
+
+Some other usages aside from youtube
+<img width="1280" height="689" alt="photo_2026-04-16_12-54-49 (4)" src="https://github.com/user-attachments/assets/a2da2f7c-250e-42a2-aee8-a8edb98a6ac4" />
+<img width="1280" height="809" alt="photo_2026-04-16_12-54-49 (2)" src="https://github.com/user-attachments/assets/372e4677-c708-43b2-8bff-e66da0e80bfc" />
 
 
 ---
