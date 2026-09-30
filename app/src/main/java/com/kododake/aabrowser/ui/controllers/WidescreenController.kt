@@ -277,9 +277,17 @@ class WidescreenController(
         handler.postDelayed(hideCursorRunnable, CURSOR_HIDE_DELAY_MS)
     }
 
-    /** On-screen log of incoming input events; only in debug builds. */
-    private val inputMonitor: InputMonitor? =
-        if (com.kododake.aabrowser.BuildConfig.DEBUG) InputMonitor(binding.inputMonitor) else null
+    /** On-screen log of incoming input events, toggled from the menu ("Input log"). */
+    private val inputMonitor: InputMonitor? = InputMonitor(binding.inputMonitor).apply {
+        isEnabled = BrowserPreferences.isInputLogEnabled(activity)
+    }
+
+    val isInputLogEnabled: Boolean get() = inputMonitor?.isEnabled == true
+
+    fun setInputLogEnabled(enabled: Boolean) {
+        BrowserPreferences.setInputLogEnabled(activity, enabled)
+        inputMonitor?.isEnabled = enabled
+    }
 
     private companion object {
         const val MIN_ZOOM = 1.0

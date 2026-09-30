@@ -25,7 +25,7 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 
 /**
- * Debug-build overlay listing the last few input events the app received, with their source
+ * Overlay (toggled from the menu) listing the last few input events the app received, with their source
  * and device. Used to find out what a car's controller (e.g. BMW iDrive) actually sends
  * through Android Auto. Also logged to logcat under the "AAB_INPUT" tag.
  */
@@ -34,12 +34,24 @@ class InputMonitor(private val view: TextView) {
     private val lines = ArrayDeque<String>()
     private val hide = Runnable { view.isVisible = false }
 
+    var isEnabled: Boolean = false
+        set(value) {
+            field = value
+            if (!value) {
+                handler.removeCallbacks(hide)
+                lines.clear()
+                view.isVisible = false
+            }
+        }
+
     fun log(event: KeyEvent) {
+        if (!isEnabled) return
         if (event.action != KeyEvent.ACTION_DOWN || event.repeatCount > 0) return
         append("KEY ${KeyEvent.keyCodeToString(event.keyCode)} (${event.keyCode}) src=${sourceName(event.source)} dev=${event.device?.name ?: "?"}")
     }
 
     fun log(event: MotionEvent) {
+        if (!isEnabled) return
         if (event.actionMasked == MotionEvent.ACTION_HOVER_MOVE || event.actionMasked == MotionEvent.ACTION_MOVE) {
             // Movement is noisy: keep only one line per burst.
             if (lines.lastOrNull()?.startsWith("MOVE") == true) lines.removeLast()

@@ -30,7 +30,6 @@ object StartPageViews {
         context: Context,
         slots: List<StartPageSlotUi>,
         hasResumePage: Boolean,
-        sponsorsQrBitmap: Bitmap?,
         customBackgroundBitmapState: State<Bitmap?>? = null,
         customBackgroundBitmapProvider: () -> Bitmap? = { null },
         isNavigatingState: State<Boolean>? = null,
@@ -45,7 +44,6 @@ object StartPageViews {
                     context = context,
                     slots = slots,
                     hasResumePage = hasResumePage,
-                    sponsorsQrBitmap = sponsorsQrBitmap,
                     customBackgroundBitmap = customBackgroundBitmap,
                     isNavigating = isNavigating,
                     callbacks = callbacks

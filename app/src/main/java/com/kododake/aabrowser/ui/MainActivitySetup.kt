@@ -146,6 +146,11 @@ class MainActivitySetup(
             },
             onZoomIn = { managers.widescreenController.zoomIn() },
             onZoomOut = { managers.widescreenController.zoomOut() },
+            onInputLogToggle = {
+                val enabled = !managers.widescreenController.isInputLogEnabled
+                managers.widescreenController.setInputLogEnabled(enabled)
+                managers.uiManager.menuHelper.stateHolder.isInputLogEnabled = enabled
+            },
             onTabs = {
                 managers.overlayCoordinator.openTabs(fromMenu = true)
             },
@@ -198,6 +203,7 @@ class MainActivitySetup(
         managers.uiManager.menuHelper.updateVersion("v${com.kododake.aabrowser.BuildConfig.VERSION_NAME}")
         val isFullscreen = BrowserPreferences.shouldUseFullscreenMode(activity)
         managers.uiManager.menuHelper.stateHolder.isFullscreenMode = isFullscreen
+        managers.uiManager.menuHelper.stateHolder.isInputLogEnabled = managers.widescreenController.isInputLogEnabled
         if (isFullscreen) {
             managers.uiManager.setImmersiveMode(true)
         }

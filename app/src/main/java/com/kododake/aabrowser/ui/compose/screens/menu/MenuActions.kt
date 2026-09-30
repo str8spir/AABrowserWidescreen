@@ -32,6 +32,7 @@ data class MenuActions(
     val onResetZoom: () -> Unit = {},
     val onZoomIn: () -> Unit = {},
     val onZoomOut: () -> Unit = {},
+    val onInputLogToggle: () -> Unit = {},
     val onTabs: () -> Unit = {},
     val onBookmarks: () -> Unit = {},
     val onQrCode: () -> Unit = {},

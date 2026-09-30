@@ -30,11 +30,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.kododake.aabrowser.data.BrowserPreferences
 import com.kododake.aabrowser.ui.compose.components.DynamicWallpaperBackground
 import com.kododake.aabrowser.ui.compose.theme.AABrowserTheme
 
@@ -45,7 +43,6 @@ data class StartPageScreenCallbacks(
     val onClearSlot: (Int) -> Unit = {},
     val onResumeClick: () -> Unit = {},
     val onPhotoOnlyToggle: () -> Unit = {},
-    val onOpenSponsors: (String) -> Unit = {}
 )
 
 @Composable
@@ -53,13 +50,11 @@ fun StartPageScreen(
     context: Context,
     slots: List<StartPageSlotUi>,
     hasResumePage: Boolean,
-    sponsorsQrBitmap: Bitmap?,
     customBackgroundBitmap: Bitmap? = null,
     isNavigating: Boolean = false,
     callbacks: StartPageScreenCallbacks = StartPageScreenCallbacks(),
     modifier: Modifier = Modifier
 ) {
-    val shouldHideSponsors = remember { BrowserPreferences.shouldHideSponsors(context) }
     val scrollState = rememberScrollState()
 
     AABrowserTheme {
@@ -85,16 +80,6 @@ fun StartPageScreen(
                         onMoveSlot = callbacks.onMoveSlot,
                         onClearSlot = callbacks.onClearSlot
                     )
-
-                    Spacer(Modifier.height(16.dp))
-
-                    if (!shouldHideSponsors) {
-                        Spacer(Modifier.height(16.dp))
-                        StartPageSponsorsSection(
-                            githubQrBitmap = sponsorsQrBitmap,
-                            onOpenUrl = callbacks.onOpenSponsors
-                        )
-                    }
 
                     Spacer(Modifier.height(16.dp))
 

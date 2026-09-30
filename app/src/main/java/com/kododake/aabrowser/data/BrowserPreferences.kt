@@ -82,6 +82,8 @@ object BrowserPreferences {
     fun getQuickActionButtonPosition(context: Context): QuickActionButtonPosition = UIPreferences.getQuickActionButtonPosition(context)
     fun setQuickActionButtonPosition(context: Context, position: QuickActionButtonPosition) = UIPreferences.setQuickActionButtonPosition(context, position)
     fun shouldHideSponsors(context: Context): Boolean = UIPreferences.shouldHideSponsors(context)
+    fun isInputLogEnabled(context: Context): Boolean = UIPreferences.isInputLogEnabled(context)
+    fun setInputLogEnabled(context: Context, enabled: Boolean) = UIPreferences.setInputLogEnabled(context, enabled)
     fun setHideSponsors(context: Context, hide: Boolean) = UIPreferences.setHideSponsors(context, hide)
 
     // --- Tab Session ---

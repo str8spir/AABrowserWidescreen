@@ -32,6 +32,7 @@ object UIPreferences {
     private const val KEY_CUSTOM_USER_AGENT = "custom_user_agent"
     private const val KEY_DESKTOP_MODE = "desktop_mode"
     private const val KEY_FULLSCREEN_MODE = "fullscreen_mode"
+    private const val KEY_INPUT_LOG = "widescreen_input_log"
 
     fun getQuickActionButtonMode(context: Context): QuickActionButtonMode {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -136,5 +137,13 @@ object UIPreferences {
             .edit()
             .putBoolean(KEY_FULLSCREEN_MODE, enabled)
             .apply()
+    }
+
+    /** Widescreen Edition: on-screen log of controller input events. */
+    fun isInputLogEnabled(context: Context): Boolean =
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getBoolean(KEY_INPUT_LOG, false)
+
+    fun setInputLogEnabled(context: Context, enabled: Boolean) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putBoolean(KEY_INPUT_LOG, enabled).apply()
     }
 }

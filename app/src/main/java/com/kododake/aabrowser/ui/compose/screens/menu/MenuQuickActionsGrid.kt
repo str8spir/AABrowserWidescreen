@@ -34,6 +34,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Bookmark
+import androidx.compose.material.icons.rounded.Gamepad
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.QrCode2
 import androidx.compose.material.icons.rounded.Settings
@@ -68,6 +69,8 @@ fun MenuQuickActionsGrid(
     onHome: () -> Unit,
     onTabs: () -> Unit,
     onNewTab: () -> Unit,
+    isInputLogEnabled: Boolean = false,
+    onInputLogToggle: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -119,7 +122,7 @@ fun MenuQuickActionsGrid(
                 topStart = 6.dp,
                 topEnd = 6.dp,
                 bottomEnd = 6.dp,
-                bottomStart = 24.dp
+                bottomStart = 6.dp
             )
             M3EGridButton(
                 icon = Icons.Rounded.Tab,
@@ -136,8 +139,26 @@ fun MenuQuickActionsGrid(
                 onClick = onNewTab,
                 topStart = 6.dp,
                 topEnd = 6.dp,
-                bottomEnd = 24.dp,
+                bottomEnd = 6.dp,
                 bottomStart = 6.dp
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(3.dp)
+        ) {
+            M3EGridButton(
+                icon = Icons.Rounded.Gamepad,
+                label = stringResource(
+                    if (isInputLogEnabled) R.string.menu_input_log_on else R.string.menu_input_log_off
+                ),
+                onClick = onInputLogToggle,
+                topStart = 6.dp,
+                topEnd = 6.dp,
+                bottomEnd = 24.dp,
+                bottomStart = 24.dp,
+                selected = isInputLogEnabled
             )
         }
     }
@@ -152,7 +173,8 @@ private fun RowScope.M3EGridButton(
     topEnd: Dp,
     bottomEnd: Dp,
     bottomStart: Dp,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    selected: Boolean = false
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -186,7 +208,9 @@ private fun RowScope.M3EGridButton(
     )
 
     val isDark = isSystemInDarkTheme()
-    val containerColor = if (isDark) {
+    val containerColor = if (selected) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else if (isDark) {
         MaterialTheme.colorScheme.surfaceContainerHigh
     } else {
         MaterialTheme.colorScheme.surfaceContainerLowest

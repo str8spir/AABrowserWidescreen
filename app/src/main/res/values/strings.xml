@@ -42,6 +42,8 @@
     <string name="menu_zoom_reset">Reset Zoom</string>
     <string name="menu_zoom_in">Zoom In</string>
     <string name="menu_zoom_out">Zoom Out</string>
+    <string name="menu_input_log_on">Input log: On</string>
+    <string name="menu_input_log_off">Input log: Off</string>
     <string name="menu_share">Share / QR</string>
     
     <string name="menu_bookmarks">Bookmarks</string>

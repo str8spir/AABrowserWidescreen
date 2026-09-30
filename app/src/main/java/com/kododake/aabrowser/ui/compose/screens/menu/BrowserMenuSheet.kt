@@ -94,7 +94,9 @@ fun BrowserMenuSheet(
                 onSettings = actions.onSettings,
                 onHome = actions.onHome,
                 onTabs = actions.onTabs,
-                onNewTab = actions.onNewTab
+                onNewTab = actions.onNewTab,
+                isInputLogEnabled = stateHolder.isInputLogEnabled,
+                onInputLogToggle = actions.onInputLogToggle
             )
 
             Spacer(Modifier.height(10.dp))
