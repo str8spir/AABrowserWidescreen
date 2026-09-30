@@ -95,10 +95,18 @@ class WidescreenController(
         if (event.isFromSource(InputDevice.SOURCE_TOUCHPAD) || event.isFromSource(InputDevice.SOURCE_MOUSE)) {
             when (event.action) {
                 MotionEvent.ACTION_HOVER_MOVE, MotionEvent.ACTION_MOVE -> {
-                    updateCursorPosition(
-                        event.getAxisValue(MotionEvent.AXIS_X),
-                        event.getAxisValue(MotionEvent.AXIS_Y)
-                    )
+                    // AXIS_X / AXIS_Y are absolute positions on mice and most touchpads; use the
+                    // relative axes when the device reports them so the cursor moves by deltas.
+                    val relX = event.getAxisValue(MotionEvent.AXIS_RELATIVE_X)
+                    val relY = event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y)
+                    if (relX != 0f || relY != 0f) {
+                        updateCursorPosition(relX, relY)
+                    } else {
+                        updateCursorPosition(
+                            event.getAxisValue(MotionEvent.AXIS_X),
+                            event.getAxisValue(MotionEvent.AXIS_Y)
+                        )
+                    }
                     return true
                 }
             }

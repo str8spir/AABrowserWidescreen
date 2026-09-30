@@ -54,7 +54,8 @@ class MainActivitySetup(
             uiManager = browserManagers.uiManager,
             navigationManager = browserManagers.navigationManager,
             overlayManager = browserManagers.overlayManager,
-            overlayCoordinator = browserManagers.overlayCoordinator
+            overlayCoordinator = browserManagers.overlayCoordinator,
+            widescreenController = browserManagers.widescreenController
         ),
         actions = actions
     )
@@ -66,7 +67,8 @@ class MainActivitySetup(
         val uiManager: BrowserUIManager,
         val navigationManager: NavigationManager,
         val overlayManager: OverlayManager,
-        val overlayCoordinator: OverlayNavigationCoordinator
+        val overlayCoordinator: OverlayNavigationCoordinator,
+        val widescreenController: com.kododake.aabrowser.ui.controllers.WidescreenController
     )
 
     data class Actions(
