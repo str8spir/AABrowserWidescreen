@@ -18,7 +18,7 @@
 package com.kododake.aabrowser
 
 object AppConstants {
-    const val MENU_BUTTON_AUTO_HIDE_DELAY_MS = 10000L
+    const val MENU_BUTTON_AUTO_HIDE_DELAY_MS = 3000L
     const val MENU_BUTTON_SHOW_DELAY_MS = 500L
     const val GITHUB_REPO_URL = "https://github.com/kododake/AABrowser"
     const val KEEP_ANDROID_OPEN_URL = "https://keepandroidopen.org"

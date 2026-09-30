@@ -153,14 +153,20 @@ class MainActivity : AppCompatActivity(), MainActivityCallbackFactory.CallbackHo
         super.onPause()
     }
 
-    override fun onGenericMotionEvent(event: MotionEvent): Boolean {
-        if (::binding.isInitialized && managers.widescreenController.handleGenericMotion(event)) return true
-        return super.onGenericMotionEvent(event)
+    // Car controller input is taken here, before any view sees it, so it works whatever has focus.
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (::binding.isInitialized && managers.widescreenController.handleKeyEvent(event)) return true
+        return super.dispatchKeyEvent(event)
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (::binding.isInitialized && managers.widescreenController.handleKeyDown(keyCode)) return true
-        return super.onKeyDown(keyCode, event)
+    override fun dispatchGenericMotionEvent(ev: MotionEvent): Boolean {
+        if (::binding.isInitialized && managers.widescreenController.handleGenericMotion(ev)) return true
+        return super.dispatchGenericMotionEvent(ev)
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        if (::binding.isInitialized) managers.widescreenController.onTouchEvent(ev)
+        return super.dispatchTouchEvent(ev)
     }
 
     override fun onDestroy() {

@@ -216,6 +216,42 @@ object WidescreenScripts {
         };
     """.trimIndent()
 
+    private const val FIND_VIDEO_FN = """
+        function findVideo() {
+            var videos = Array.prototype.slice.call(document.querySelectorAll('video'));
+            var playing = videos.filter(function(v) { return !v.paused && !v.ended; });
+            if (playing.length) return playing[0];
+            var visible = videos.filter(function(v) { return v.offsetWidth > 0 && v.offsetHeight > 0; });
+            return visible[0] || videos[0] || null;
+        }
+    """
+
+    /** Play/pause toggle for the page's main video (car controller push / media key). */
+    val TOGGLE_PLAYBACK_JS: String = """
+        (function() {
+            $FIND_VIDEO_FN
+            var v = findVideo();
+            if (!v) return;
+            if (v.paused || v.ended) { var p = v.play(); if (p && p.catch) p.catch(function() {}); } else { v.pause(); }
+        })();
+    """.trimIndent()
+
+    val PLAY_VIDEO_JS: String = """
+        (function() {
+            $FIND_VIDEO_FN
+            var v = findVideo();
+            if (v) { var p = v.play(); if (p && p.catch) p.catch(function() {}); }
+        })();
+    """.trimIndent()
+
+    val PAUSE_VIDEO_JS: String = """
+        (function() {
+            $FIND_VIDEO_FN
+            var v = findVideo();
+            if (v) v.pause();
+        })();
+    """.trimIndent()
+
     const val CALL_RESTORE_UI_JS = "if (typeof restoreUI === 'function') { restoreUI(); }"
 
     /** Runs at page start on youtube.com so the first paint already uses the wide layout. */

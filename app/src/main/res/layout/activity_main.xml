@@ -136,4 +136,20 @@
         android:elevation="101dp"
         android:importantForAccessibility="no" />
 
+    <TextView
+        android:id="@+id/inputMonitor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_margin="8dp"
+        android:background="#CC000000"
+        android:elevation="102dp"
+        android:fontFamily="monospace"
+        android:maxWidth="560dp"
+        android:padding="8dp"
+        android:textColor="#FF7CFC00"
+        android:textSize="11sp"
+        android:visibility="gone"
+        android:importantForAccessibility="no" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
