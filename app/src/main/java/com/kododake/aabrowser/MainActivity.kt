@@ -21,6 +21,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.os.Bundle
+import android.view.KeyEvent
+import android.view.MotionEvent
 import android.view.View
 import android.webkit.WebView
 import androidx.activity.result.contract.ActivityResultContracts
@@ -151,7 +153,18 @@ class MainActivity : AppCompatActivity(), MainActivityCallbackFactory.CallbackHo
         super.onPause()
     }
 
+    override fun onGenericMotionEvent(event: MotionEvent): Boolean {
+        if (::binding.isInitialized && managers.widescreenController.handleGenericMotion(event)) return true
+        return super.onGenericMotionEvent(event)
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (::binding.isInitialized && managers.widescreenController.handleKeyDown(keyCode)) return true
+        return super.onKeyDown(keyCode, event)
+    }
+
     override fun onDestroy() {
+        managers.widescreenController.cleanup()
         menuFabController.cleanup()
         managers.uiManager.exitFullscreen()
         managers.startPageManager.onDestroy()

@@ -117,14 +117,15 @@ class WebBrowserCallbackFactory(
                     }
                 }
             },
-            onEnterFullscreen = { v, c ->
-                activity.runOnUiThread {
-                    provider.uiManager.enterFullscreen(v, c)
-                }
+            // Widescreen Edition: don't switch to Android's native fullscreen view. The page's
+            // own player is cropped to fill the screen in-page instead (see WidescreenScripts).
+            onEnterFullscreen = { _, c ->
+                c.onCustomViewHidden()
             },
-            onExitFullscreen = {
+            onExitFullscreen = {},
+            onPageStarted = {
                 activity.runOnUiThread {
-                    provider.uiManager.exitFullscreen(true)
+                    provider.widescreenController.resetZoom(tab)
                 }
             },
             onPermissionRequest = { r ->

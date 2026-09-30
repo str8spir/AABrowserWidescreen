@@ -58,6 +58,10 @@ class BrowserWebViewClient(
     override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
         super.onPageStarted(view, url, favicon)
         val stringUrl = url ?: return
+        callbacks.onPageStarted(stringUrl)
+        if (stringUrl.contains("youtube.com")) {
+            view.evaluateJavascript(WidescreenScripts.YOUTUBE_PREEMPTIVE_JS, null)
+        }
         val uri = Uri.parse(stringUrl)
         val scheme = uri.scheme?.lowercase()
 
@@ -74,6 +78,10 @@ class BrowserWebViewClient(
     override fun onPageFinished(view: WebView, url: String?) {
         super.onPageFinished(view, url)
         view.evaluateJavascript(SpeechRecognitionBridge.POLYFILL_JS, null)
+        view.evaluateJavascript(WidescreenScripts.RESTORE_UI_JS, null)
+        if (url?.contains("youtube.com") == true) {
+            view.evaluateJavascript(WidescreenScripts.YOUTUBE_LAYOUT_FIX_JS, null)
+        }
         if (!WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
             if (BrowserPreferences.isDrmL3EnforcerEnabled(view.context)) {
                 view.evaluateJavascript(WebScripts.DRM_L3_ENFORCER_JS, null)

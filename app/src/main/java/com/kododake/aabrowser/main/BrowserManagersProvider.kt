@@ -42,4 +42,5 @@ interface BrowserManagersProvider {
     val overlayManager: OverlayManager
     val overlayCoordinator: com.kododake.aabrowser.ui.OverlayNavigationCoordinator
     val webBrowserCallbackFactory: WebBrowserCallbackFactory
+    val widescreenController: com.kododake.aabrowser.ui.controllers.WidescreenController
 }

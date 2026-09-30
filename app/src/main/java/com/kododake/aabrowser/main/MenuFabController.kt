@@ -61,7 +61,7 @@ class MenuFabController(
         if (isInFullscreen() || binding.menuOverlay.isVisible) return
         menuHelper.showFab()
         if (!isShowingStartPage() && !BrowserPreferences.isQuickActionButtonAlwaysVisible(context)) {
-            handler.postDelayed(autoHideMenuFab, 4000L)
+            handler.postDelayed(autoHideMenuFab, MENU_BUTTON_AUTO_HIDE_DELAY_MS)
         }
     }
 

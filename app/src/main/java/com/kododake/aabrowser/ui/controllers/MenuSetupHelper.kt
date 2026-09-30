@@ -19,7 +19,8 @@ package com.kododake.aabrowser.ui.controllers
 
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import com.kododake.aabrowser.ui.compose.screens.menu.BrowserMenuFab
+import com.kododake.aabrowser.ui.compose.screens.menu.BrowserNavigationDock
+import com.kododake.aabrowser.ui.compose.screens.menu.DockActions
 import com.kododake.aabrowser.ui.compose.screens.menu.BrowserMenuSheet
 import com.kododake.aabrowser.ui.compose.screens.menu.MenuActions
 import com.kododake.aabrowser.ui.compose.screens.menu.MenuStateHolder
@@ -42,13 +43,14 @@ class MenuSetupHelper {
         }
     }
 
-    fun setupFab(composeView: ComposeView, onClick: () -> Unit) {
+    fun setupFab(composeView: ComposeView, onClick: () -> Unit, dockActions: DockActions = DockActions()) {
         composeView.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                BrowserMenuFab(
+                BrowserNavigationDock(
                     stateHolder = stateHolder,
-                    onClick = onClick
+                    onMenuClick = onClick,
+                    actions = dockActions
                 )
             }
         }

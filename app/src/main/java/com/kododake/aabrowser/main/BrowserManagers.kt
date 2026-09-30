@@ -77,6 +77,10 @@ class BrowserManagers(
         )
     }
 
+    override val widescreenController: com.kododake.aabrowser.ui.controllers.WidescreenController by lazy {
+        com.kododake.aabrowser.ui.controllers.WidescreenController(activity, binding, this)
+    }
+
     override val bookmarkManager: BookmarkManager by lazy {
         BookmarkManager(activity, binding, callbackFactory.createBookmarkCallbacks())
     }

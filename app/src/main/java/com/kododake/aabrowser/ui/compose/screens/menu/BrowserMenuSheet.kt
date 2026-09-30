@@ -99,6 +99,15 @@ fun BrowserMenuSheet(
 
             Spacer(Modifier.height(10.dp))
 
+            MenuZoomCard(
+                onCropToFill = actions.onCropToFill,
+                onResetZoom = actions.onResetZoom,
+                onZoomIn = actions.onZoomIn,
+                onZoomOut = actions.onZoomOut
+            )
+
+            Spacer(Modifier.height(10.dp))
+
             MenuDesktopSwitchCard(
                 isDesktopMode = stateHolder.isDesktopMode,
                 onDesktopToggle = actions.onDesktopToggle

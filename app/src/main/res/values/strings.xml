@@ -38,6 +38,10 @@
     <string name="menu_settings">Settings</string>
     <string name="menu_tabs">Tabs</string>
     <string name="menu_new_tab">New Tab</string>
+    <string name="menu_zoom_fill">Crop to Fill</string>
+    <string name="menu_zoom_reset">Reset Zoom</string>
+    <string name="menu_zoom_in">Zoom In</string>
+    <string name="menu_zoom_out">Zoom Out</string>
     <string name="menu_share">Share / QR</string>
     
     <string name="menu_bookmarks">Bookmarks</string>

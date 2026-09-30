@@ -127,4 +127,13 @@
         android:layout_gravity="bottom|start"
         android:layout_margin="16dp" />
 
+    <ImageView
+        android:id="@+id/virtualCursor"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_cursor"
+        android:visibility="gone"
+        android:elevation="101dp"
+        android:importantForAccessibility="no" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

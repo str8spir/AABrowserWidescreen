@@ -120,6 +120,7 @@ fun configureWebView(
             override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
                 if (view != null && callback != null) {
                     callbacks.onEnterFullscreen(view, callback)
+                    webView.evaluateJavascript(WidescreenScripts.FULLSCREEN_VIDEO_JS, null)
                 } else {
                     super.onShowCustomView(view, callback)
                 }
@@ -127,6 +128,7 @@ fun configureWebView(
 
             override fun onHideCustomView() {
                 callbacks.onExitFullscreen()
+                webView.evaluateJavascript(WidescreenScripts.CALL_RESTORE_UI_JS, null)
                 super.onHideCustomView()
             }
 

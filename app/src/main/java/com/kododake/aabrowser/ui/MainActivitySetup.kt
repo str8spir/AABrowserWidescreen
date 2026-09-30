@@ -134,6 +134,16 @@ class MainActivitySetup(
                 managers.tabManager.createNewTab(true)
                 managers.uiManager.hideMenuOverlay()
             },
+            onCropToFill = {
+                managers.widescreenController.applyCropToFill()
+                managers.uiManager.hideMenuOverlay()
+            },
+            onResetZoom = {
+                managers.widescreenController.resetZoom()
+                managers.uiManager.hideMenuOverlay()
+            },
+            onZoomIn = { managers.widescreenController.zoomIn() },
+            onZoomOut = { managers.widescreenController.zoomOut() },
             onTabs = {
                 managers.overlayCoordinator.openTabs(fromMenu = true)
             },
@@ -173,9 +183,16 @@ class MainActivitySetup(
             }
         )
         managers.uiManager.menuHelper.setup(binding.menuComposeView, menuActions)
-        managers.uiManager.menuHelper.setupFab(binding.fabComposeView) {
-            actions.handleQuickActionButtonPressed()
-        }
+        managers.uiManager.menuHelper.setupFab(
+            composeView = binding.fabComposeView,
+            onClick = { actions.handleQuickActionButtonPressed() },
+            dockActions = com.kododake.aabrowser.ui.compose.screens.menu.DockActions(
+                onCropToFill = { managers.widescreenController.applyCropToFill() },
+                onResetZoom = { managers.widescreenController.resetZoom() },
+                onZoomIn = { managers.widescreenController.zoomIn() },
+                onZoomOut = { managers.widescreenController.zoomOut() }
+            )
+        )
         managers.uiManager.menuHelper.updateVersion("v${com.kododake.aabrowser.BuildConfig.VERSION_NAME}")
         val isFullscreen = BrowserPreferences.shouldUseFullscreenMode(activity)
         managers.uiManager.menuHelper.stateHolder.isFullscreenMode = isFullscreen
