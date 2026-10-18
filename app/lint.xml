@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <issue id="MissingIntentFilterForMediaSearch" severity="ignore" />
+    <issue id="MissingMediaBrowserServiceIntentFilter" severity="ignore" />
+    <issue id="UnsafeOptInUsageError">
+        <option name="opt-in" value="androidx.webkit.WebViewCompat.ExperimentalNavigate" />
+    </issue>
+</lint>

@@ -30,6 +30,7 @@ fun MenuAddressBar(
     SearchBarComponent(
         initialQuery = url,
         onNavigate = onNavigate,
+        showSecurityStatus = true,
         modifier = modifier
     )
 }

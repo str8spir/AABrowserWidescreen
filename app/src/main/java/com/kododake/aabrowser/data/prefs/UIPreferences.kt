@@ -27,7 +27,7 @@ object UIPreferences {
     private const val KEY_QUICK_ACTION_BUTTON_MODE = "quick_action_button_mode"
     private const val KEY_QUICK_ACTION_BUTTON_ALWAYS_VISIBLE = "quick_action_button_always_visible"
     private const val KEY_QUICK_ACTION_BUTTON_POSITION = "quick_action_button_position"
-    private const val KEY_HIDE_SPONSORS = "hide_sponsors"
+    const val KEY_HIDE_SPONSORS = "hide_sponsors"
     private const val KEY_USER_AGENT_PROFILE = "user_agent_profile"
     private const val KEY_CUSTOM_USER_AGENT = "custom_user_agent"
     private const val KEY_DESKTOP_MODE = "desktop_mode"

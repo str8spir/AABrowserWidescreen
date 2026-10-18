@@ -1,7 +1,10 @@
 # Changelog
 
-## Widescreen Edition on AABrowser v3.0
+## Widescreen Edition on AABrowser v3.3
 
+- Merged upstream kododake/AABrowser v3.3 (AA Anything start page banner with settings toggle, address bar SSL lock icon, lint fixes).
+- Car controller support: nudges move an on-screen cursor, push clicks or plays/pauses, rotary scrolls or zooms; optional on-screen input log (menu toggle).
+- Start page sponsor/donation panel removed.
 - Rebased onto upstream kododake/AABrowser v3.0 (Material 3 Expressive UI, modular architecture).
 - Floating dock rebuilt in Compose: menu, crop-to-fill, reset and zoom in/out buttons. Still follows the quick-action button position, always-visible and auto-hide settings; auto-hide delay is 10s.
 - Crop-to-fill / zoom / reset video controls also available in the menu sheet.

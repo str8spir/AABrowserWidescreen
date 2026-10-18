@@ -24,6 +24,7 @@ import androidx.webkit.WebViewFeature
 
 object WebViewNavigationHelper {
 
+    @WebViewCompat.ExperimentalNavigate
     fun navigate(webView: WebView, url: String, replaceCurrentEntry: Boolean = false) {
         if (url.isBlank()) return
         if (WebViewFeature.isFeatureSupported(WebViewFeature.WEBVIEW_NAVIGATE_EXPERIMENTAL_V1)) {

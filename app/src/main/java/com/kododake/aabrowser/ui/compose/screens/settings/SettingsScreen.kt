@@ -192,6 +192,7 @@ fun SettingsScreen(
                         context = context,
                         onPickStartPageBackground = callbacks.onPickStartPageBackground,
                         onClearStartPageBackground = callbacks.onClearStartPageBackground,
+                        onAAAnythingBannerVisibilityChanged = callbacks.onAAAnythingBannerVisibilityChanged
                     )
 
                     Spacer(Modifier.height(24.dp))

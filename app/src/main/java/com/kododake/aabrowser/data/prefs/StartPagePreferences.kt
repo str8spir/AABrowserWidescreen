@@ -26,6 +26,7 @@ object StartPagePreferences {
 
     private const val KEY_START_PAGE_SLOTS = "start_page_slots"
     private const val KEY_START_PAGE_BACKGROUND_URI = "start_page_background_uri"
+    const val KEY_SHOW_AA_ANYTHING_PROMOTION = "show_aa_anything_promotion"
 
     @Volatile
     private var cachedStartPageSlots: List<String?>? = null
@@ -102,6 +103,15 @@ object StartPagePreferences {
     fun clearStartPageBackgroundUri(context: Context) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
             .remove(KEY_START_PAGE_BACKGROUND_URI).apply()
+    }
+
+    fun shouldShowAAAnythingPromotion(context: Context): Boolean =
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean(KEY_SHOW_AA_ANYTHING_PROMOTION, true)
+
+    fun setShowAAAnythingPromotion(context: Context, show: Boolean) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
+            .putBoolean(KEY_SHOW_AA_ANYTHING_PROMOTION, show).apply()
     }
 
     private fun defaultSlots(): MutableList<String> = MutableList(MAX_START_PAGE_SITES) { index ->

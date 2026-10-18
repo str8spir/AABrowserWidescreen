@@ -42,6 +42,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.Clear
+import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.LockOpen
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -70,6 +72,7 @@ import com.kododake.aabrowser.R
 fun SearchBarComponent(
     initialQuery: String = "",
     onNavigate: (String) -> Unit,
+    showSecurityStatus: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     var queryText by remember { mutableStateOf(initialQuery) }
@@ -77,6 +80,9 @@ fun SearchBarComponent(
     LaunchedEffect(initialQuery) {
         queryText = initialQuery
     }
+
+    val isSecure = queryText.startsWith("https://", ignoreCase = true)
+    val isInsecure = queryText.startsWith("http://", ignoreCase = true)
 
     val isDark = isSystemInDarkTheme()
     val containerColor = if (isDark) {
@@ -105,11 +111,27 @@ fun SearchBarComponent(
         ) {
             Spacer(Modifier.width(16.dp))
 
+            val leadingIcon = when {
+                showSecurityStatus && isSecure -> Icons.Rounded.Lock
+                showSecurityStatus && isInsecure -> Icons.Rounded.LockOpen
+                else -> Icons.Rounded.Search
+            }
+            val leadingTint = when {
+                showSecurityStatus && isSecure -> MaterialTheme.colorScheme.primary
+                showSecurityStatus && isInsecure -> MaterialTheme.colorScheme.error
+                else -> MaterialTheme.colorScheme.primary
+            }
+            val leadingDesc = when {
+                showSecurityStatus && isSecure -> stringResource(R.string.secure_connection)
+                showSecurityStatus && isInsecure -> stringResource(R.string.insecure_connection)
+                else -> stringResource(R.string.menu_go)
+            }
+
             Icon(
-                imageVector = Icons.Rounded.Search,
-                contentDescription = stringResource(R.string.menu_go),
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
+                imageVector = leadingIcon,
+                contentDescription = leadingDesc,
+                tint = leadingTint,
+                modifier = Modifier.size(if (showSecurityStatus && (isSecure || isInsecure)) 20.dp else 24.dp)
             )
 
             Spacer(Modifier.width(12.dp))

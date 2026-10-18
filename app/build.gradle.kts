@@ -18,8 +18,8 @@ android {
         applicationId = "com.kododake.aabrowser"
         minSdk = 35
         targetSdk = 37
-        versionCode = 9
-        versionName = "3.0"
+        versionCode = 10
+        versionName = "3.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

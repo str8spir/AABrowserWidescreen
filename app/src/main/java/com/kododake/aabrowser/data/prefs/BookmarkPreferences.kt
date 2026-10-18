@@ -162,6 +162,8 @@ object BookmarkPreferences {
     fun getStartPageBackgroundUri(context: Context): String? = StartPagePreferences.getStartPageBackgroundUri(context)
     fun setStartPageBackgroundUri(context: Context, uri: String?) = StartPagePreferences.setStartPageBackgroundUri(context, uri)
     fun clearStartPageBackgroundUri(context: Context) = StartPagePreferences.clearStartPageBackgroundUri(context)
+    fun shouldShowAAAnythingPromotion(context: Context): Boolean = StartPagePreferences.shouldShowAAAnythingPromotion(context)
+    fun setShowAAAnythingPromotion(context: Context, show: Boolean) = StartPagePreferences.setShowAAAnythingPromotion(context, show)
 
     private fun loadBookmarkEntries(context: Context): List<BookmarkEntry> {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

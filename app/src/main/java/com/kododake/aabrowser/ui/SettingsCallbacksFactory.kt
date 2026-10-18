@@ -57,7 +57,8 @@ object SettingsCallbacksFactory {
             },
             onPickStartPageBackground = { callbacks.onPickBackgroundRequested() },
             onClearStartPageBackground = { startPageManager.clearStartPageBackground() },
-            onSponsorsVisibilityChanged = { startPageManager.refreshStartPage() }
+            onSponsorsVisibilityChanged = { startPageManager.refreshStartPage() },
+            onAAAnythingBannerVisibilityChanged = { startPageManager.refreshStartPage() }
         )
     }
 }

@@ -18,22 +18,23 @@
 package com.kododake.aabrowser.ui.compose.screens.settings.sections
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.DirectionsCar
 import androidx.compose.material.icons.rounded.Image
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.kododake.aabrowser.AppConstants
 import com.kododake.aabrowser.R
 import com.kododake.aabrowser.data.BrowserPreferences
 import com.kododake.aabrowser.ui.compose.components.ExpressiveListItem
@@ -52,9 +54,14 @@ fun StartPageSettingsComposable(
     context: Context,
     onPickStartPageBackground: (() -> Unit)?,
     onClearStartPageBackground: (() -> Unit)?,
+    onAAAnythingBannerVisibilityChanged: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var bgUri by remember { mutableStateOf(BrowserPreferences.getStartPageBackgroundUri(context)) }
+    var showAAAnythingBanner by remember {
+        mutableStateOf(BrowserPreferences.shouldShowAAAnythingPromotion(context))
+    }
+
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = stringResource(R.string.settings_start_page),
@@ -72,7 +79,7 @@ fun StartPageSettingsComposable(
                 stringResource(R.string.settings_start_page_background_default)
             },
             leadingIcon = Icons.Rounded.Image,
-            position = ListGroupPosition.Single,
+            position = ListGroupPosition.Top,
             trailingContent = if (hasCustomBg && onClearStartPageBackground != null) {
                 {
                     IconButton(onClick = {
@@ -90,6 +97,47 @@ fun StartPageSettingsComposable(
         )
 
         Spacer(Modifier.height(3.dp))
-    }
 
+        ExpressiveListItem(
+            headline = stringResource(R.string.settings_start_page_show_aa_anything),
+            supportingText = stringResource(R.string.settings_start_page_show_aa_anything_desc),
+            leadingIcon = Icons.Rounded.DirectionsCar,
+            position = ListGroupPosition.Middle,
+            trailingContent = {
+                Switch(
+                    checked = showAAAnythingBanner,
+                    onCheckedChange = { checked ->
+                        showAAAnythingBanner = checked
+                        BrowserPreferences.setShowAAAnythingPromotion(context, checked)
+                        onAAAnythingBannerVisibilityChanged?.invoke()
+                    }
+                )
+            },
+            onClick = {
+                val next = !showAAAnythingBanner
+                showAAAnythingBanner = next
+                BrowserPreferences.setShowAAAnythingPromotion(context, next)
+                onAAAnythingBannerVisibilityChanged?.invoke()
+            }
+        )
+
+        Spacer(Modifier.height(3.dp))
+
+        ExpressiveListItem(
+            headline = stringResource(R.string.settings_start_page_about_aa_anything),
+            supportingText = stringResource(R.string.settings_start_page_about_aa_anything_desc),
+            leadingIcon = Icons.AutoMirrored.Rounded.OpenInNew,
+            position = ListGroupPosition.Bottom,
+            onClick = {
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(AppConstants.AA_ANYTHING_LATEST_RELEASE_URL))
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                } catch (_: Exception) {
+                }
+            }
+        )
+
+        Spacer(Modifier.height(3.dp))
+    }
 }

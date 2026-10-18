@@ -21,6 +21,7 @@ object AppConstants {
     const val MENU_BUTTON_AUTO_HIDE_DELAY_MS = 3000L
     const val MENU_BUTTON_SHOW_DELAY_MS = 500L
     const val GITHUB_REPO_URL = "https://github.com/kododake/AABrowser"
+    const val AA_ANYTHING_LATEST_RELEASE_URL = "https://github.com/kododake/AAAnything/releases/latest"
     const val KEEP_ANDROID_OPEN_URL = "https://keepandroidopen.org"
     const val FREE_DROID_WARN_SOLUTIONS_URL = "https://github.com/woheller69/FreeDroidWarn?tab=readme-ov-file#solutions"
     const val FREE_DROID_WARN_VERSION_KEY = "versionCodeWarn"
