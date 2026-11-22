@@ -2,7 +2,7 @@
 
 [![Android](https://img.shields.io/badge/Android-15%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://www.android.com/)
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg?style=for-the-badge)](https://www.gnu.org/licenses/gpl-3.0)
-[<img src="https://github.com/user-attachments/assets/1551eaef-432d-4634-875c-f085870d00a1" alt="Get it on Obtainium" height="40">](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22com.kododake.aabrowser%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Fkododake%2FAABrowser%22%2C%22author%22%3A%22kododake%22%2C%22name%22%3A%22AABrowser%22%2C%22preferredApkIndex%22%3A0%2C%22additionalSettings%22%3A%22%7B%5C%22includePrereleases%5C%22%3Afalse%2C%5C%22fallbackToOlderReleases%5C%22%3Atrue%2C%5C%22filterReleaseTitlesByRegEx%5C%22%3A%5C%22%5C%22%2C%5C%22filterReleaseNotesByRegEx%5C%22%3A%5C%22%5C%22%2C%5C%22verifyLatestTag%5C%22%3Afalse%2C%5C%22sortMethodChoice%5C%22%3A%5C%22date%5C%22%2C%5C%22useLatestAssetDateAsReleaseDate%5C%22%3Afalse%2C%5C%22releaseTitleAsVersion%5C%22%3Afalse%2C%5C%22trackOnly%5C%22%3Afalse%2C%5C%22versionExtractionRegEx%5C%22%3A%5C%22%5C%22%2C%5C%22matchGroupToUse%5C%22%3A%5C%22%5C%22%2C%5C%22versionDetection%5C%22%3Atrue%2C%5C%22releaseDateAsVersion%5C%22%3Afalse%2C%5C%22useVersionCodeAsOSVersion%5C%22%3Afalse%2C%5C%22apkFilterRegEx%5C%22%3A%5C%22%5C%22%2C%5C%22invertAPKFilter%5C%22%3Afalse%2C%5C%22autoApkFilterByArch%5C%22%3Atrue%2C%5C%22appName%5C%22%3A%5C%22%5C%22%2C%5C%22appAuthor%5C%22%3A%5C%22%5C%22%2C%5C%22shizukuPretendToBeGooglePlay%5C%22%3Afalse%2C%5C%22allowInsecure%5C%22%3Afalse%2C%5C%22exemptFromBackgroundUpdates%5C%22%3Afalse%2C%5C%22skipUpdateNotifications%5C%22%3Afalse%2C%5C%22about%5C%22%3A%5C%22%5C%22%2C%5C%22refreshBeforeDownload%5C%22%3Afalse%2C%5C%22includeZips%5C%22%3Afalse%2C%5C%22zippedApkFilterRegEx%5C%22%3A%5C%22%5C%22%7D%22%2C%22overrideSource%22%3Anull%7D)
+[<img src="https://github.com/user-attachments/assets/1551eaef-432d-4634-875c-f085870d00a1" alt="Get it on Obtainium" height="40">](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22com.kododake.aabrowser%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Fstr8spir%2Faabrowserwidescreen%22%2C%22author%22%3A%22str8spir%22%2C%22name%22%3A%22AABrowser%20Widescreen%22%2C%22preferredApkIndex%22%3A0%2C%22additionalSettings%22%3A%22%7B%5C%22includePrereleases%5C%22%3Afalse%2C%5C%22fallbackToOlderReleases%5C%22%3Atrue%2C%5C%22filterReleaseTitlesByRegEx%5C%22%3A%5C%22%5C%22%2C%5C%22filterReleaseNotesByRegEx%5C%22%3A%5C%22%5C%22%2C%5C%22verifyLatestTag%5C%22%3Afalse%2C%5C%22sortMethodChoice%5C%22%3A%5C%22date%5C%22%2C%5C%22useLatestAssetDateAsReleaseDate%5C%22%3Afalse%2C%5C%22releaseTitleAsVersion%5C%22%3Afalse%2C%5C%22trackOnly%5C%22%3Afalse%2C%5C%22versionExtractionRegEx%5C%22%3A%5C%22%5C%22%2C%5C%22matchGroupToUse%5C%22%3A%5C%22%5C%22%2C%5C%22versionDetection%5C%22%3Atrue%2C%5C%22releaseDateAsVersion%5C%22%3Afalse%2C%5C%22useVersionCodeAsOSVersion%5C%22%3Afalse%2C%5C%22apkFilterRegEx%5C%22%3A%5C%22%5C%22%2C%5C%22invertAPKFilter%5C%22%3Afalse%2C%5C%22autoApkFilterByArch%5C%22%3Atrue%2C%5C%22appName%5C%22%3A%5C%22%5C%22%2C%5C%22appAuthor%5C%22%3A%5C%22%5C%22%2C%5C%22shizukuPretendToBeGooglePlay%5C%22%3Afalse%2C%5C%22allowInsecure%5C%22%3Afalse%2C%5C%22exemptFromBackgroundUpdates%5C%22%3Afalse%2C%5C%22skipUpdateNotifications%5C%22%3Afalse%2C%5C%22about%5C%22%3A%5C%22%5C%22%2C%5C%22refreshBeforeDownload%5C%22%3Afalse%2C%5C%22includeZips%5C%22%3Afalse%2C%5C%22zippedApkFilterRegEx%5C%22%3A%5C%22%5C%22%7D%22%2C%22overrideSource%22%3Anull%7D)
 
 **The ultimate WebView browser experience for Android Auto, reimagined for ultra-widescreen dashboards.**
 Transform your stationary time with a modern browser optimized for wide aspect ratios (32:9 / 21:9) found in modern systems like BMW iDrive 7/8/9 (X5 G05 45E) and Mercedes MBUX.
@@ -10,12 +10,21 @@ Transform your stationary time with a modern browser optimized for wide aspect r
 > [!NOTE]
 > **Project Lineage**
 > This is a specialized fork of **[kododake/AABrowser](https://github.com/kododake/AABrowser)**. It maintains all original features while adding specific widescreen ergonomics and video scaling tools.
+> The current release is based on upstream **AABrowser v3.5**. Grab the APK from [Releases](https://github.com/str8spir/aabrowserwidescreen/releases); see [CHANGELOG.md](CHANGELOG.md) for history.
 
 ---
 
 ## ✨ Widescreen Edition Exclusives
 
 This fork addresses the "black bar" issue common on ultra-wide head units by introducing a context-aware control system.
+
+**At a glance, on top of upstream AABrowser:**
+* **Floating dock:** menu, crop-to-fill, reset and zoom in/out buttons, with auto-hide.
+* **Crop-to-fill / zoom / reset** video controls, also available in the menu sheet.
+* **In-page fullscreen:** page fullscreen requests are handled in-page (crop-to-fill) instead of Android's native fullscreen view.
+* **YouTube layout fixes** for wide two-column displays.
+* **Car controller support:** iDrive nudges move an on-screen cursor, push clicks or plays/pauses, and the rotary knob scrolls or zooms. Optional on-screen input log for troubleshooting.
+* **Start page sponsor panel removed.**
 
 ### 🏝️ The Floating Control Island
 Designed specifically for **32:9 aspect ratios**, this UI element only appears when a video enters fullscreen mode. It allows you to:
@@ -69,12 +78,15 @@ Some other usages aside from youtube
 
 ## 🤝 Credits & Contributors
 
-A massive thanks to the developers who made this tool possible:
+AA Browser is the work of its original authors; this edition only adds the widescreen layer on top. A massive thanks to the developers who made this tool possible:
 
-* **[kododake](https://github.com/kododake):** Original Project Lead.
-* **[SaveEditors](https://github.com/SaveEditors):** Major architecture updates (Tabs, Themes, Start-page).
+* **[kododake](https://github.com/kododake):** Original author and project lead of [AABrowser](https://github.com/kododake/AABrowser). All core browser features, the v3 Material 3 Expressive redesign and the v3.5 translations come from upstream.
+* **[SaveEditors](https://github.com/SaveEditors):** Major architecture updates (Tabs, Themes, Start-page). The first Widescreen builds were based on their fork.
 * **[cmacrowther](https://github.com/cmacrowther):** Design improvements.
 * **[jigneshbhavani](https://github.com/jigneshbhavani):** Microphone support.
+* **[str8spir](https://github.com/str8spir):** Widescreen Edition (floating dock, crop-to-fill and zoom controls, YouTube widescreen fixes, iDrive / car controller support).
+
+If you like the browser itself, please star and support the [original project](https://github.com/kododake/AABrowser).
 
 ---
 

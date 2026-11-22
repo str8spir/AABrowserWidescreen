@@ -1,5 +1,9 @@
 # Changelog
 
+## Widescreen Edition on AABrowser v3.5
+
+- Merged upstream kododake/AABrowser v3.5 (25 new languages, local network permission handling, Material 3 Expressive migration, UI fixes). Widescreen-only strings are still English in the new languages.
+
 ## Widescreen Edition on AABrowser v3.3
 
 - Merged upstream kododake/AABrowser v3.3 (AA Anything start page banner with settings toggle, address bar SSL lock icon, lint fixes).
